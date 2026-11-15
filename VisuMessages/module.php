@@ -20,6 +20,14 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('MessageColor', 0x1e2a36);
         $this->RegisterPropertyInteger('TextColor', 0xedf3f7);
         $this->RegisterPropertyInteger('AccentColor', 0x7ed8b6);
+        foreach (['WebFront', 'IPSView', 'Tile'] as $view) {
+            $this->RegisterPropertyBoolean($view . 'OwnColors', false);
+            foreach (['BackgroundColor' => 0x141c25, 'MessageColor' => 0x1e2a36, 'TextColor' => 0xedf3f7, 'AccentColor' => 0x7ed8b6] as $property => $default) {
+                $this->RegisterPropertyInteger($view . $property, $default);
+            }
+            $this->RegisterPropertyString($view . 'CSS', '');
+        }
+        $this->RegisterPropertyString('SDKColorProfile', 'auto');
         $this->RegisterPropertyString('MessageSize', 'normal');
         $this->RegisterPropertyInteger('MessageMinWidth', 240);
         $this->RegisterPropertyInteger('MessageMaxWidth', 760);
@@ -422,7 +430,19 @@ class VisuMessages extends IPSModuleStrict
                     : sprintf('#%06x', max(0, min(0xffffff, $value)));
             }
         }
-        return ['colors' => $colors, 'minWidth' => $min, 'maxWidth' => $max,
+        $profiles = [];
+        foreach (['webfront' => 'WebFront', 'ipsview' => 'IPSView', 'tile' => 'Tile'] as $key => $view) {
+            $viewColors = $colors;
+            if ($this->ReadPropertyBoolean($view . 'OwnColors')) {
+                $viewColors = [];
+                foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $color => $property) {
+                    $value = $this->ReadPropertyInteger($view . $property);
+                    $viewColors[$color] = $color === 'bg' && $value < 0 ? 'transparent' : sprintf('#%06x', max(0, min(0xffffff, $value)));
+                }
+            }
+            $profiles[$key] = ['colors' => $viewColors, 'css' => $this->ReadPropertyString($view . 'CSS')];
+        }
+        return ['profiles' => $profiles, 'sdkProfile' => $this->ReadPropertyString('SDKColorProfile'), 'colors' => $colors, 'minWidth'  => $min, 'maxWidth' => $max,
             'iconSize' => max(24, min(96, $this->ReadPropertyInteger('IconSize')))];
     }
 
