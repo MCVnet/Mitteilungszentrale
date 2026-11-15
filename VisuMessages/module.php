@@ -11,6 +11,7 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('Limit', 200);
         $this->RegisterPropertyInteger('Height', 480);
         $this->RegisterPropertyString('BaseURL', '');
+        $this->RegisterPropertyBoolean('ShowModuleData', false);
         $this->RegisterPropertyBoolean('UseVariableIcons', true);
         $this->RegisterPropertyInteger('IconSize', 48);
         $this->RegisterPropertyBoolean('EmbedSDKIcons', true);
@@ -39,7 +40,7 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterVariableString('URL', 'WebView-Adresse (mit Zugriffsschlüssel)', [
             'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION
         ], 10);
-        IPS_SetHidden($this->GetIDForIdent('URL'), true);
+        $this->registerDataVariables();
         // HTML-SDK: documented value 1; symbolic constant is unavailable in some 9.0 builds.
         $this->SetVisualizationType(1);
         $this->RegisterHook('visu-messages-' . $this->InstanceID);
@@ -49,6 +50,7 @@ class VisuMessages extends IPSModuleStrict
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        $this->registerDataVariables();
         // Replace previously cleared colors with the original solid defaults once.
         $normalized = false;
         foreach (['', 'WebFront', 'IPSView', 'Tile'] as $prefix) {
@@ -495,6 +497,19 @@ class VisuMessages extends IPSModuleStrict
         return '';
     }
 
+    private function registerDataVariables(): void
+    {
+        $presentation = ['PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION];
+        $this->RegisterVariableInteger('MessageCount', 'Meldungen gesamt', $presentation, 20);
+        $this->RegisterVariableInteger('PinnedCount', 'Meldungen angepinnt', $presentation, 30);
+        $this->RegisterVariableInteger('UnpinnedCount', 'Meldungen nicht angepinnt', $presentation, 40);
+        $this->RegisterVariableString('MessageData', 'Meldungsdaten (JSON)', $presentation, 50);
+        $hidden = !$this->ReadPropertyBoolean('ShowModuleData');
+        foreach (['URL', 'MessageCount', 'PinnedCount', 'UnpinnedCount', 'MessageData'] as $ident) {
+            IPS_SetHidden($this->GetIDForIdent($ident), $hidden);
+        }
+    }
+
     private function updateLinks(): void
     {
         $path = '/hook/visu-messages-' . $this->InstanceID . '?key=' . $this->ReadAttributeString('Token');
@@ -517,7 +532,15 @@ class VisuMessages extends IPSModuleStrict
 
     private function publish(array $store): void
     {
-        $this->UpdateVisualizationValue(json_encode(['messages' => $this->messagesForVisualization($store), 'appearance' => $this->appearance()], JSON_THROW_ON_ERROR));
+        $messages = $this->messagesForVisualization($store);
+        $total = count($messages);
+        $pinned = count(array_filter($messages, static fn(array $message): bool => (bool) ($message['pinned'] ?? false)));
+        $this->SetValue('MessageCount', $total);
+        $this->SetValue('PinnedCount', $pinned);
+        $this->SetValue('UnpinnedCount', $total - $pinned);
+        $this->SetValue('MessageData', json_encode(['version' => 1, 'total' => $total, 'pinned' => $pinned,
+            'unpinned' => $total - $pinned, 'messages' => $messages], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+        $this->UpdateVisualizationValue(json_encode(['messages' => $messages, 'appearance' => $this->appearance()], JSON_THROW_ON_ERROR));
     }
 
     private function locked(callable $callback): void
