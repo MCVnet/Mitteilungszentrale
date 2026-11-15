@@ -20,7 +20,7 @@
 </div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
-<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten.</div>
+<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.6</div>
 </main>
 <script>
 'use strict';
@@ -71,15 +71,15 @@ async function act(action,id=0){
   busy=true;report('Wird gespeichert …',false);
   try{
     if(config.mode==='sdk'){
-      requestAction(action,id);
       pending=setTimeout(()=>{busy=false;report('Keine Bestätigung erhalten. Ansicht aktualisieren.',true);},12000);
+      requestAction(action==='Clear'?'ClearUnpinned':action,action==='Clear'?1:id);
     }else{
       const data=await webRequest(action,id);render(data.messages);busy=false;report('Gespeichert',false);
     }
   }catch(e){busy=false;report(e.message,true);}
 }
 function handleMessage(data){
-  try{const value=typeof data==='string'?JSON.parse(data):data;render(value.messages);clearTimeout(pending);busy=false;report('Aktuell',false);}catch(e){report('Aktualisierung konnte nicht gelesen werden.',true);}
+  try{const value=typeof data==='string'?JSON.parse(data):data;clearTimeout(pending);busy=false;if(value.error){report(value.error,true);return;}render(value.messages);report('Aktuell',false);}catch(e){report('Aktualisierung konnte nicht gelesen werden.',true);}
 }
 document.getElementById('clear').onclick=()=>{
   document.getElementById('clearConfirmation').hidden=false;
