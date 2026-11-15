@@ -4,6 +4,7 @@ require_once __DIR__ . '/Rules.php';
 
 class VisuMessages extends IPSModuleStrict
 {
+    private const ANNOUNCEMENT_MODULE = '{26F752F0-4D4E-A52C-DB3C-35DFEA979F44}';
     public function Create(): void
     {
         parent::Create();
@@ -41,6 +42,9 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterAttributeString('Store', '{"next":1,"messages":[]}');
         $this->RegisterAttributeString('Token', '');
         $this->RegisterAttributeInteger('UpdatedAt', 0);
+        $this->RegisterAttributeString('AnnouncementQueue', '[]');
+        $this->RegisterAttributeInteger('AnnouncementGeneration', 0);
+        $this->RegisterTimer('Announcements', 0, 'VMMSG_ProcessAnnouncements($_IPS["TARGET"]);');
         $this->RegisterVariableString('HTML', 'Meldungen (WebFront / IPSView)', [
             'PRESENTATION' => VARIABLE_PRESENTATION_LEGACY, 'PROFILE' => '~HTMLBox'
         ], 0);
@@ -64,6 +68,15 @@ class VisuMessages extends IPSModuleStrict
         if (is_array($rules) && array_is_list($rules)) {
             $changed = false;
             foreach ($rules as &$rule) {
+                if (!is_array($rule)) {
+                    continue;
+                }
+                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60] as $field => $default) {
+                    if (!array_key_exists($field, $rule)) {
+                        $rule[$field] = $default;
+                        $changed = true;
+                    }
+                }
                 if (is_array($rule) && ($rule['Text'] ?? '') === '{name}: {value}') {
                     $rule['Text'] = '{parent} · {name}: {value}';
                     $changed = true;
@@ -105,6 +118,8 @@ class VisuMessages extends IPSModuleStrict
     private function configure(): void
     {
         $this->locked(function (): void {
+            $this->WriteAttributeInteger('AnnouncementGeneration', $this->ReadAttributeInteger('AnnouncementGeneration') + 1);
+            $this->writeAnnouncementQueue([]);
             foreach ($this->GetReferenceList() as $id) {
                 $this->UnregisterMessage($id, VM_UPDATE);
                 $this->UnregisterMessage($id, VM_DELETE);
@@ -124,6 +139,9 @@ class VisuMessages extends IPSModuleStrict
                     $this->RegisterReference($id);
                     $this->RegisterMessage($id, VM_UPDATE);
                     $this->RegisterMessage($id, VM_DELETE);
+                    if ($rule['Announce']) {
+                        $this->RegisterReference($rule['AnnouncementID']);
+                    }
                 }
                 $this->SetBuffer('ActiveRules', json_encode($rules, JSON_THROW_ON_ERROR));
                 $this->SetBuffer('Error', '');
@@ -168,6 +186,21 @@ class VisuMessages extends IPSModuleStrict
             $rule['VariableID'] = $id;
             $rule['Operator'] = $op;
             $rule['Target'] = VisuMessagesRules::target((string) ($rule['Value'] ?? ''), $type);
+            $rule['Announce'] = (bool) ($rule['Announce'] ?? false);
+            $rule['AnnouncementID'] = (int) ($rule['AnnouncementID'] ?? 0);
+            $rule['AnnouncementRepeats'] = (int) ($rule['AnnouncementRepeats'] ?? 0);
+            $rule['AnnouncementInterval'] = (int) ($rule['AnnouncementInterval'] ?? 60);
+            if ($rule['Announce']) {
+                $device = $rule['AnnouncementID'];
+                if (!IPS_InstanceExists($device) || IPS_GetInstance($device)['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
+                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': gültige Durchsage-Instanz auswählen.');
+                }
+                if ($rule['AnnouncementRepeats'] < 0 || $rule['AnnouncementRepeats'] > 100 ||
+                    $rule['AnnouncementInterval'] < 1 || $rule['AnnouncementInterval'] > 86400) {
+                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Wiederholungen 0–100, Abstand 1–86400 Sekunden.');
+                }
+            }
+            $rule['AnnouncementKey'] = hash('sha256', json_encode($rule, JSON_THROW_ON_ERROR));
             $active[] = $rule;
         }
         return $active;
@@ -205,10 +238,19 @@ class VisuMessages extends IPSModuleStrict
                     '{name}' => IPS_GetName($SenderID), '{value}' => $format($Data[0]),
                     '{old}' => $format($Data[2]), '{id}' => (string) $SenderID
                 ]);
+                $messageID = $store['next']++;
                 array_unshift($store['messages'], [
-                    'id' => $store['next']++, 'time' => time(), 'text' => $text,
+                    'id' => $messageID, 'time' => time(), 'text' => $text,
                     'source' => IPS_GetName($SenderID), 'variableID' => $SenderID, 'pinned' => false
                 ]);
+                if ($rule['Announce']) {
+                    $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
+                    $queue[] = ['messageID' => $messageID, 'device' => $rule['AnnouncementID'], 'text' => $text,
+                        'remaining' => 1 + $rule['AnnouncementRepeats'], 'interval' => $rule['AnnouncementInterval'],
+                        'due' => time(), 'ruleKey' => $rule['AnnouncementKey'],
+                        'generation' => $this->ReadAttributeInteger('AnnouncementGeneration')];
+                    $this->writeAnnouncementQueue($queue);
+                }
                 $changed = true;
             }
             if ($changed) {
@@ -216,6 +258,92 @@ class VisuMessages extends IPSModuleStrict
                 $this->save($store);
             }
         });
+    }
+
+    /** Timer worker: playback runs outside the message-store lock. */
+    public function ProcessAnnouncements(): void
+    {
+        $worker = 'Visu-Messages.Announcements.' . $this->InstanceID;
+        if (!IPS_SemaphoreEnter($worker, 1)) {
+            return;
+        }
+        try {
+            $job = null;
+            $this->locked(function () use (&$job): void {
+                $queue = $this->prunedAnnouncementQueue();
+                usort($queue, static fn(array $a, array $b): int => $a['due'] <=> $b['due']);
+                if ($queue !== [] && $queue[0]['due'] <= time()) {
+                    $job = array_shift($queue);
+                }
+                // Claim before calling the device: no duplicate playback on overlapping timer callbacks.
+                $this->writeAnnouncementQueue($queue);
+            });
+            if ($job === null) {
+                return;
+            }
+            try {
+                if (!function_exists('DS_Play') || !IPS_InstanceExists($job['device']) ||
+                    IPS_GetInstance($job['device'])['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
+                    throw new RuntimeException('Durchsage-Modul oder Ausgabegerät nicht verfügbar.');
+                }
+                if (IPS_GetInstance($job['device'])['InstanceStatus'] !== 102) {
+                    throw new RuntimeException('Durchsage-Instanz ist nicht betriebsbereit.');
+                }
+                // The current official module returns void on success; older releases may return bool.
+                if (DS_Play($job['device'], $job['text']) === false) {
+                    throw new RuntimeException('Durchsage wurde vom Modul abgelehnt.');
+                }
+                $this->locked(function () use ($job): void {
+                    $queue = $this->prunedAnnouncementQueue();
+                    if ($job['remaining'] > 1 && $this->announcementAllowed($job)) {
+                        $job['remaining']--;
+                        $job['due'] = time() + $job['interval'];
+                        $queue[] = $job;
+                    }
+                    $this->writeAnnouncementQueue($queue);
+                });
+            } catch (Throwable $e) {
+                $this->SendDebug('Durchsage', $e->getMessage(), 0);
+                $this->LogMessage('Durchsage für Meldung ' . $job['messageID'] . ' abgebrochen: ' . $e->getMessage(), KL_WARNING);
+            }
+        } finally {
+            IPS_SemaphoreLeave($worker);
+        }
+    }
+
+    private function announcementAllowed(array $job): bool
+    {
+        if ($job['generation'] !== $this->ReadAttributeInteger('AnnouncementGeneration')) {
+            return false;
+        }
+        $ids = array_column($this->store()['messages'], 'id');
+        if (!in_array($job['messageID'], $ids, true)) {
+            return false;
+        }
+        foreach (json_decode($this->GetBuffer('ActiveRules') ?: '[]', true) as $rule) {
+            if (($rule['Announce'] ?? false) && $rule['AnnouncementKey'] === $job['ruleKey']) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function prunedAnnouncementQueue(): array
+    {
+        $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
+        $ids = array_fill_keys(array_column($this->store()['messages'], 'id'), true);
+        $rules = json_decode($this->GetBuffer('ActiveRules') ?: '[]', true);
+        $keys = array_fill_keys(array_column(array_filter($rules, static fn(array $rule): bool => (bool) ($rule['Announce'] ?? false)), 'AnnouncementKey'), true);
+        $generation = $this->ReadAttributeInteger('AnnouncementGeneration');
+        return array_values(array_filter($queue, static fn(array $job): bool =>
+            $job['generation'] === $generation && isset($ids[$job['messageID']], $keys[$job['ruleKey']])));
+    }
+
+    private function writeAnnouncementQueue(array $queue): void
+    {
+        $this->WriteAttributeString('AnnouncementQueue', json_encode(array_values($queue), JSON_THROW_ON_ERROR));
+        $delay = $queue === [] ? 0 : max(1000, min(86400000, (min(array_column($queue, 'due')) - time()) * 1000));
+        $this->SetTimerInterval('Announcements', $delay);
     }
 
     public function GetVisualizationTile(): string
@@ -563,6 +691,7 @@ class VisuMessages extends IPSModuleStrict
     {
         $this->WriteAttributeString('Store', json_encode($store, JSON_THROW_ON_ERROR));
         $this->WriteAttributeInteger('UpdatedAt', time());
+        $this->writeAnnouncementQueue($this->prunedAnnouncementQueue());
         $this->publish($store);
     }
 
