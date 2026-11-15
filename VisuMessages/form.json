@@ -1,21 +1,17 @@
 {
   "elements": [
     {
-      "type": "Label",
-      "caption": "Meldungen entstehen beim Wechsel von Bedingung nicht erfüllt zu erfüllt. Beim Start oder Speichern werden keine bestehenden Zustände nachgemeldet."
-    },
-    {
       "type": "List",
       "name": "Rules",
-      "caption": "Melderegeln",
-      "rowCount": 8,
+      "caption": "Melderegeln und Variablen",
+      "rowCount": 16,
       "add": true,
       "delete": true,
       "columns": [
         {
           "name": "Enabled",
           "caption": "Aktiv",
-          "width": "65px",
+          "width": "55px",
           "add": true,
           "edit": {
             "type": "CheckBox"
@@ -24,7 +20,7 @@
         {
           "name": "VariableID",
           "caption": "Variable",
-          "width": "220px",
+          "width": "420px",
           "add": 0,
           "edit": {
             "type": "SelectVariable"
@@ -33,7 +29,7 @@
         {
           "name": "Operator",
           "caption": "Bedingung",
-          "width": "140px",
+          "width": "135px",
           "add": "eq",
           "edit": {
             "type": "Select",
@@ -72,7 +68,7 @@
         {
           "name": "Value",
           "caption": "Vergleichswert",
-          "width": "120px",
+          "width": "110px",
           "add": "true",
           "edit": {
             "type": "ValidationTextBox"
@@ -87,398 +83,445 @@
             "type": "ValidationTextBox"
           }
         }
-      ]
-    },
-    {
-      "type": "Label",
-      "caption": "Platzhalter: {name} Variablenname, {value} neuer Rohwert, {old} alter Rohwert, {id} Variablen-ID. Boolesche Werte: true/false. Texte: exakte Groß-/Kleinschreibung."
-    },
-    {
-      "type": "NumberSpinner",
-      "name": "Limit",
-      "caption": "Maximale Anzahl nicht angepinnter Meldungen",
-      "minimum": 1,
-      "maximum": 5000
-    },
-    {
-      "type": "NumberSpinner",
-      "name": "Height",
-      "caption": "Höhe der HTML-Box in Pixeln",
-      "minimum": 200,
-      "maximum": 2000
-    },
-    {
-      "type": "ValidationTextBox",
-      "name": "BaseURL",
-      "caption": "Symcon-Basisadresse für IPSView, z. B. https://symcon.example.de (leer = relativ)"
-    },
-    {
-      "type": "Label",
-      "caption": "Die WebView-Adresse enthält einen geheimen Zugriffsschlüssel. Wer die Adresse kennt, kann Meldungen lesen und bedienen. Bei externer Nutzung HTTPS oder VPN verwenden."
+      ],
+      "width": "100%"
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Darstellung · Symbole und Größe",
-      "expanded": true,
+      "caption": "Hinweise zu Melderegeln und Platzhaltern",
+      "expanded": false,
       "items": [
         {
-          "type": "CheckBox",
-          "name": "UseVariableIcons",
-          "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+          "type": "Label",
+          "caption": "Meldungen entstehen beim Wechsel von Bedingung nicht erfüllt zu erfüllt. Beim Start oder Speichern werden keine bestehenden Zustände nachgemeldet."
         },
         {
-          "type": "NumberSpinner",
-          "name": "IconSize",
-          "caption": "Symbolgröße (Pixel)",
-          "minimum": 24,
-          "maximum": 96
-        },
-        {
-          "type": "Select",
-          "name": "MessageSize",
-          "caption": "Breite der Meldungen",
-          "options": [
-            {
-              "caption": "Mini · bis 320 px",
-              "value": "mini"
-            },
-            {
-              "caption": "Kompakt · bis 480 px",
-              "value": "compact"
-            },
-            {
-              "caption": "Normal · bis 760 px",
-              "value": "normal"
-            },
-            {
-              "caption": "Groß · bis 1100 px",
-              "value": "large"
-            },
-            {
-              "caption": "Benutzerdefiniert",
-              "value": "custom"
-            }
-          ]
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "MessageMinWidth",
-          "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
-          "minimum": 120,
-          "maximum": 3000
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "MessageMaxWidth",
-          "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
-          "minimum": 120,
-          "maximum": 3000
+          "type": "Label",
+          "caption": "Platzhalter: {name} Variablenname, {value} neuer Rohwert, {old} alter Rohwert, {id} Variablen-ID. Boolesche Werte: true/false. Texte: exakte Groß-/Kleinschreibung."
         }
       ]
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Farben · Gemeinsame Vorgabe",
+      "caption": "Einstellungen",
       "expanded": false,
       "items": [
         {
-          "type": "Label",
-          "caption": "Gilt für alle Visualisierungen, solange dort keine eigenen Farben aktiviert sind."
-        },
-        {
-          "type": "CheckBox",
-          "name": "CustomColors",
-          "caption": "Eigene Vorgabefarben verwenden (sonst automatisch hell/dunkel)"
-        },
-        {
-          "type": "RowLayout",
+          "type": "ExpansionPanel",
+          "caption": "Speicher und Begrenzung",
+          "expanded": false,
           "items": [
             {
-              "type": "SelectColor",
-              "name": "BackgroundColor",
-              "caption": "Ansicht",
-              "allowTransparent": false,
-              "width": "300px"
+              "type": "NumberSpinner",
+              "name": "Limit",
+              "caption": "Maximale Anzahl nicht angepinnter Meldungen",
+              "minimum": 1,
+              "maximum": 5000,
+              "width": "350px"
             },
             {
-              "type": "SelectColor",
-              "name": "MessageColor",
-              "caption": "Meldung",
-              "allowTransparent": false,
-              "width": "300px"
-            }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "items": [
-            {
-              "type": "SelectColor",
-              "name": "TextColor",
-              "caption": "Schrift",
-              "allowTransparent": false,
-              "width": "300px"
-            },
-            {
-              "type": "SelectColor",
-              "name": "AccentColor",
-              "caption": "Akzent / Symbole",
-              "allowTransparent": false,
-              "width": "300px"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Farben · WebFront",
-      "expanded": false,
-      "items": [
-        {
-          "type": "CheckBox",
-          "name": "WebFrontOwnColors",
-          "caption": "Eigene Farben verwenden"
-        },
-        {
-          "type": "Label",
-          "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
-        },
-        {
-          "type": "RowLayout",
-          "items": [
-            {
-              "type": "SelectColor",
-              "name": "WebFrontBackgroundColor",
-              "caption": "Ansicht",
-              "allowTransparent": false,
-              "width": "300px"
-            },
-            {
-              "type": "SelectColor",
-              "name": "WebFrontMessageColor",
-              "caption": "Meldung",
-              "allowTransparent": false,
-              "width": "300px"
-            }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "items": [
-            {
-              "type": "SelectColor",
-              "name": "WebFrontTextColor",
-              "caption": "Schrift",
-              "allowTransparent": false,
-              "width": "300px"
-            },
-            {
-              "type": "SelectColor",
-              "name": "WebFrontAccentColor",
-              "caption": "Akzent / Symbole",
-              "allowTransparent": false,
-              "width": "300px"
+              "type": "Label",
+              "caption": "Angepinnte Meldungen bleiben erhalten und zählen nicht zum Limit."
             }
           ]
         },
         {
           "type": "ExpansionPanel",
-          "caption": "Erweitert · CSS",
+          "caption": "Darstellung · Symbole und Größe",
           "expanded": false,
           "items": [
             {
-              "type": "ValidationTextBox",
-              "name": "WebFrontCSS",
-              "caption": "Eigenes CSS",
-              "multiline": true,
-              "width": "100%"
+              "type": "CheckBox",
+              "name": "UseVariableIcons",
+              "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
             },
             {
-              "type": "Label",
-              "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Farben · IPSView",
-      "expanded": false,
-      "items": [
-        {
-          "type": "CheckBox",
-          "name": "IPSViewOwnColors",
-          "caption": "Eigene Farben verwenden"
-        },
-        {
-          "type": "Label",
-          "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
-        },
-        {
-          "type": "RowLayout",
-          "items": [
-            {
-              "type": "SelectColor",
-              "name": "IPSViewBackgroundColor",
-              "caption": "Ansicht",
-              "allowTransparent": false,
-              "width": "300px"
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "NumberSpinner",
+                  "name": "IconSize",
+                  "caption": "Symbolgröße (Pixel)",
+                  "minimum": 24,
+                  "maximum": 96,
+                  "width": "180px"
+                },
+                {
+                  "type": "Select",
+                  "name": "MessageSize",
+                  "caption": "Breite der Meldungen",
+                  "options": [
+                    {
+                      "caption": "Mini · bis 320 px",
+                      "value": "mini"
+                    },
+                    {
+                      "caption": "Kompakt · bis 480 px",
+                      "value": "compact"
+                    },
+                    {
+                      "caption": "Normal · bis 760 px",
+                      "value": "normal"
+                    },
+                    {
+                      "caption": "Groß · bis 1100 px",
+                      "value": "large"
+                    },
+                    {
+                      "caption": "Benutzerdefiniert",
+                      "value": "custom"
+                    }
+                  ],
+                  "width": "260px"
+                }
+              ]
             },
             {
-              "type": "SelectColor",
-              "name": "IPSViewMessageColor",
-              "caption": "Meldung",
-              "allowTransparent": false,
-              "width": "300px"
-            }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "items": [
-            {
-              "type": "SelectColor",
-              "name": "IPSViewTextColor",
-              "caption": "Schrift",
-              "allowTransparent": false,
-              "width": "300px"
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "NumberSpinner",
+                  "name": "MessageMinWidth",
+                  "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
+                  "minimum": 120,
+                  "maximum": 3000,
+                  "width": "220px"
+                },
+                {
+                  "type": "NumberSpinner",
+                  "name": "MessageMaxWidth",
+                  "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
+                  "minimum": 120,
+                  "maximum": 3000,
+                  "width": "220px"
+                }
+              ]
             },
             {
-              "type": "SelectColor",
-              "name": "IPSViewAccentColor",
-              "caption": "Akzent / Symbole",
-              "allowTransparent": false,
-              "width": "300px"
+              "type": "NumberSpinner",
+              "name": "Height",
+              "caption": "HTML-Box: Höhe (Pixel)",
+              "minimum": 200,
+              "maximum": 2000,
+              "width": "220px"
             }
           ]
         },
         {
           "type": "ExpansionPanel",
-          "caption": "Erweitert · CSS",
+          "caption": "Farben · Gemeinsame Vorgabe",
           "expanded": false,
           "items": [
             {
-              "type": "ValidationTextBox",
-              "name": "IPSViewCSS",
-              "caption": "Eigenes CSS",
-              "multiline": true,
-              "width": "100%"
-            },
-            {
               "type": "Label",
-              "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Farben · Kachelvisu",
-      "expanded": false,
-      "items": [
-        {
-          "type": "CheckBox",
-          "name": "TileOwnColors",
-          "caption": "Eigene Farben verwenden"
-        },
-        {
-          "type": "Label",
-          "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
-        },
-        {
-          "type": "RowLayout",
-          "items": [
-            {
-              "type": "SelectColor",
-              "name": "TileBackgroundColor",
-              "caption": "Ansicht",
-              "allowTransparent": false,
-              "width": "300px"
+              "caption": "Gilt für alle Visualisierungen, solange dort keine eigenen Farben aktiviert sind."
             },
             {
-              "type": "SelectColor",
-              "name": "TileMessageColor",
-              "caption": "Meldung",
-              "allowTransparent": false,
-              "width": "300px"
-            }
-          ]
-        },
-        {
-          "type": "RowLayout",
-          "items": [
-            {
-              "type": "SelectColor",
-              "name": "TileTextColor",
-              "caption": "Schrift",
-              "allowTransparent": false,
-              "width": "300px"
+              "type": "CheckBox",
+              "name": "CustomColors",
+              "caption": "Eigene Vorgabefarben verwenden (sonst automatisch hell/dunkel)"
             },
             {
-              "type": "SelectColor",
-              "name": "TileAccentColor",
-              "caption": "Akzent / Symbole",
-              "allowTransparent": false,
-              "width": "300px"
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "BackgroundColor",
+                  "caption": "Ansicht",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "MessageColor",
+                  "caption": "Meldung",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "TextColor",
+                  "caption": "Schrift",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "AccentColor",
+                  "caption": "Akzent / Symbole",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
             }
           ]
         },
         {
           "type": "ExpansionPanel",
-          "caption": "Erweitert · CSS",
+          "caption": "Farben · WebFront",
+          "expanded": false,
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "WebFrontOwnColors",
+              "caption": "Eigene Farben verwenden"
+            },
+            {
+              "type": "Label",
+              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "WebFrontBackgroundColor",
+                  "caption": "Ansicht",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "WebFrontMessageColor",
+                  "caption": "Meldung",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "WebFrontTextColor",
+                  "caption": "Schrift",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "WebFrontAccentColor",
+                  "caption": "Akzent / Symbole",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "ExpansionPanel",
+              "caption": "Erweitert · CSS",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "ValidationTextBox",
+                  "name": "WebFrontCSS",
+                  "caption": "Eigenes CSS",
+                  "multiline": true,
+                  "width": "100%"
+                },
+                {
+                  "type": "Label",
+                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Farben · IPSView",
+          "expanded": false,
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "IPSViewOwnColors",
+              "caption": "Eigene Farben verwenden"
+            },
+            {
+              "type": "Label",
+              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "IPSViewBackgroundColor",
+                  "caption": "Ansicht",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "IPSViewMessageColor",
+                  "caption": "Meldung",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "IPSViewTextColor",
+                  "caption": "Schrift",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "IPSViewAccentColor",
+                  "caption": "Akzent / Symbole",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "ExpansionPanel",
+              "caption": "Erweitert · CSS",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "ValidationTextBox",
+                  "name": "IPSViewCSS",
+                  "caption": "Eigenes CSS",
+                  "multiline": true,
+                  "width": "100%"
+                },
+                {
+                  "type": "Label",
+                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Farben · Kachelvisu",
+          "expanded": false,
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "TileOwnColors",
+              "caption": "Eigene Farben verwenden"
+            },
+            {
+              "type": "Label",
+              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "TileBackgroundColor",
+                  "caption": "Ansicht",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "TileMessageColor",
+                  "caption": "Meldung",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "TileTextColor",
+                  "caption": "Schrift",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "TileAccentColor",
+                  "caption": "Akzent / Symbole",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "ExpansionPanel",
+              "caption": "Erweitert · CSS",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "ValidationTextBox",
+                  "name": "TileCSS",
+                  "caption": "Eigenes CSS",
+                  "multiline": true,
+                  "width": "100%"
+                },
+                {
+                  "type": "Label",
+                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Erweitert · Einbindung",
           "expanded": false,
           "items": [
             {
               "type": "ValidationTextBox",
-              "name": "TileCSS",
-              "caption": "Eigenes CSS",
-              "multiline": true,
+              "name": "BaseURL",
+              "caption": "Symcon-Basisadresse für IPSView, z. B. https://symcon.example.de (leer = relativ)",
               "width": "100%"
             },
             {
+              "type": "CheckBox",
+              "name": "EmbedSDKIcons",
+              "caption": "Symbole direkt einbetten (für IPSView empfohlen)"
+            },
+            {
+              "type": "NumberSpinner",
+              "name": "LocalWebPort",
+              "caption": "Lokaler Symcon-Webserverport für eingebettete Symbole",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            {
+              "type": "Select",
+              "name": "SDKColorProfile",
+              "caption": "Profil für TileHtml / HTML-SDK",
+              "options": [
+                {
+                  "caption": "Automatisch: eigenständige Ansicht = IPSView, iframe = Kachelvisu",
+                  "value": "auto"
+                },
+                {
+                  "caption": "Immer IPSView (Sonderfall / anderer Client)",
+                  "value": "ipsview"
+                },
+                {
+                  "caption": "Immer Kachelvisu (Sonderfall / anderer Client)",
+                  "value": "tile"
+                }
+              ]
+            },
+            {
               "type": "Label",
-              "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Erweitert · Einbindung",
-      "expanded": false,
-      "items": [
-        {
-          "type": "CheckBox",
-          "name": "EmbedSDKIcons",
-          "caption": "Symbole direkt einbetten (für IPSView empfohlen)"
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "LocalWebPort",
-          "caption": "Lokaler Symcon-Webserverport für eingebettete Symbole",
-          "minimum": 1,
-          "maximum": 65535
-        },
-        {
-          "type": "Select",
-          "name": "SDKColorProfile",
-          "caption": "Profil für TileHtml / HTML-SDK",
-          "options": [
-            {
-              "caption": "Automatisch: eigenständige Ansicht = IPSView, iframe = Kachelvisu",
-              "value": "auto"
-            },
-            {
-              "caption": "Immer IPSView (Sonderfall / anderer Client)",
-              "value": "ipsview"
-            },
-            {
-              "caption": "Immer Kachelvisu (Sonderfall / anderer Client)",
-              "value": "tile"
+              "caption": "Die WebView-Adresse enthält einen geheimen Zugriffsschlüssel. Wer die Adresse kennt, kann Meldungen lesen und bedienen. Bei externer Nutzung HTTPS oder VPN verwenden."
             }
           ]
         }
