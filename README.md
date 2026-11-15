@@ -1,4 +1,4 @@
-# Visu-Messages · 0.30
+# Visu-Messages · 0.31
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -196,3 +196,11 @@ Push besitzt nun eine unabhängige Zahl zusätzlicher Wiederholungen (0–100) u
 Darstellung ist in Kartenformat, Schrift und Symbole, Rahmen/Schatten sowie HTML-Box getrennt. Benutzerdefinierte Breiten liegen eingeklappt beim Kartenformat. Meldungstext (10–30 px) und Zeit/Quelle (9–20 px) sind getrennt konfigurierbar. Mit aktivierter Inhaltsskalierung werden die eingestellten Größen zusätzlich mit der Kartenhöhe skaliert.
 
 Die Mini-Darstellung richtet sich nach der tatsächlichen Kartenbreite (bis 420 px), nicht mehr nur nach dem Browserfenster. Kleine Karten verwenden Symbol-Schaltflächen, eine kurze Zeitzeile mit Quelle und bis zu zwei Textzeilen. Vollständiges Datum/Quelle stehen im Tooltip. Antippen des Nachrichtentexts oder Enter/Leertaste klappt die Meldung vollständig auf und wieder zu. Bei großer Schrift dürfen schmale Karten über die eingestellte Höhe hinauswachsen, damit Inhalte und Bedienung lesbar bleiben.
+
+## Überschrift, Debug und optionale Funktionen (0.31)
+
+Unter Darstellung → Überschrift lässt sich „Meldungen“ durch einen eigenen Text ersetzen oder nur die Überschrift ausblenden. Anzahl und Löschbutton bleiben erhalten.
+
+Unter Modulvariablen und Daten kann erweitertes Debug eingeschaltet werden. Die Ausgabe erfolgt im Symcon-Debug-Fenster der Instanz; der Schalter öffnet dieses Fenster nicht automatisch. Er protokolliert Meldungs-IDs, Quellvariablen und Ausgabeschritte, nicht Nachrichtentexte oder Zugriffsschlüssel. Warnungen bei Ausgabefehlern bleiben unabhängig davon aktiv.
+
+Unter Optionale Funktionen · Verfügbarkeit wird angezeigt, ob Durchsage-Instanzen und Push-Zielvisualisierungen vorhanden sind. Fehlt ein gewähltes Ziel, wird nur die betreffende optionale Ausgabe übersprungen; gültige Melderegeln erzeugen weiterhin visuelle Meldungen. Nach Einrichtung/Änderung eines Zieles Konfiguration erneut übernehmen. Das separate mehrstufige Modul Benachrichtigung ist nicht erforderlich, da Push direkt über die Visu-API gesendet wird.
