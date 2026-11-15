@@ -300,15 +300,52 @@ class VisuMessages extends IPSModuleStrict
             $assetBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . $host;
         }
         $config['iconScriptURL'] = $assetBase . '/icons.js';
-        $html = str_replace('__MZ_CONFIG__', json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), file_get_contents(__DIR__ . '/view.html'));
         if (($config['mode'] ?? '') === 'sdk' && $this->ReadPropertyBoolean('EmbedSDKIcons')) {
-            $library = $this->embeddedIconLibrary();
-            if ($library !== '') {
-                // Keep one inline script: native IPSView renders HTML without loading external scripts reliably.
-                $html = str_replace("\nloadIconLibrary();", "\n" . $library . "\n;loadIconLibrary();", $html);
+            $config['iconDefinitions'] = $this->compactIconDefinitions($config['messages'] ?? []);
+        }
+        $html = str_replace('__MZ_CONFIG__', json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), file_get_contents(__DIR__ . '/view.html'));
+        return $html;
+    }
+
+    private function compactIconDefinitions(array $messages): array
+    {
+        $symbols = array_column($messages, 'icon');
+        foreach (json_decode($this->ReadPropertyString('Rules'), true) ?? [] as $rule) {
+            $symbols[] = $this->variableIcon((int) ($rule['VariableID'] ?? 0));
+        }
+        $symbols = array_unique(array_filter($symbols));
+        if ($symbols === []) {
+            return [];
+        }
+        $library = $this->embeddedIconLibrary();
+        $definitions = [];
+        foreach ($symbols as $raw) {
+            if (!preg_match('/^[A-Za-z0-9 _-]{1,160}$/', $raw)) {
+                continue;
+            }
+            $words = preg_split('/\\s+/', $raw);
+            $name = end($words);
+            foreach ($words as $word) {
+                if (str_starts_with($word, 'fa-') && !in_array($word, ['fa-light', 'fa-brands', 'fa-kit'], true)) {
+                    $name = $word;
+                    break;
+                }
+            }
+            $name = preg_replace('/^fa-/', '', $name);
+            $names = array_unique([$name, strtolower(preg_replace('/([a-z])([A-Z])/', '$1-$2', $name)), strtolower($name)]);
+            foreach ($names as $candidate) {
+                // Read only the JSON icon tuple; never execute the downloaded JavaScript.
+                $pattern = '~(?:^|[,{])"?' . preg_quote($candidate, '~') . '"?:(\\[\\d+,\\d+,\\[[^\\]]*\\],"[^"\\r\\n]*",(?:"[^"\\r\\n]*"|\\[[^\\]]*\\])\\])~';
+                if (preg_match($pattern, $library, $match)) {
+                    $tuple = json_decode($match[1], true);
+                    if (is_array($tuple) && count($tuple) === 5 && is_numeric($tuple[0]) && is_numeric($tuple[1])) {
+                        $definitions[$raw] = $tuple;
+                        break;
+                    }
+                }
             }
         }
-        return $html;
+        return $definitions;
     }
 
     private function embeddedIconLibrary(): string
