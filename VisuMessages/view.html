@@ -64,9 +64,16 @@ article.expanded{height:auto!important;overflow:visible}
 article.expanded .message{display:block!important;-webkit-line-clamp:unset;overflow:visible}
 .message[role="button"]{cursor:pointer}.message[role="button"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 article.narrow .announcement-mark{margin-left:4px;width:1.15em;height:1.15em}
-</style><style>header.no-heading{justify-content:flex-end}main.narrow header.no-heading .count{grid-column:1 / -1;text-align:right}</style></head>
+</style><style>header.no-heading{justify-content:flex-end}main.narrow header.no-heading .count{grid-column:1 / -1;text-align:right}</style><style>
+.sort-control{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.sort-control select{font:inherit;font-size:13px;min-height:42px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;color:var(--text);background:var(--card)}
+.sort-control select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+main.narrow header h1{grid-column:1;grid-row:1}main.narrow header .count{grid-column:2;grid-row:1;text-align:right}main.narrow #clear{grid-row:3}main.narrow .sort-control{grid-column:1 / -1;grid-row:2;justify-content:space-between}main.narrow .sort-control select{flex:1}
+article[data-priority="1"] .message-icon{color:var(--priority-1-color,#ef5350)}
+article[data-priority="2"] .message-icon{color:var(--priority-2-color,#f5c542)}
+</style></head>
 <body><main>
-<header><h1>Meldungen</h1><span id="count" class="count"></span><button id="clear" type="button">Nicht angepinnte löschen</button></header>
+<header><h1>Meldungen</h1><label class="sort-control">Sortieren <select id="sortMode" aria-label="Meldungen sortieren"><option value="priority">Priorität</option><option value="date">Datum</option></select></label><span id="count" class="count"></span><button id="clear" type="button">Nicht angepinnte löschen</button></header>
 <div id="clearConfirmation" hidden role="group" aria-label="Sammellöschen bestätigen" style="margin-bottom:16px">
 <p>Alle nicht angepinnten Meldungen löschen? Angepinnte Meldungen bleiben erhalten.</p>
 <button id="confirmClear" type="button">Jetzt löschen</button>
@@ -88,6 +95,14 @@ const list = document.getElementById('list');
 const status = document.getElementById('status');
 let messages = config.messages || [];
 let rendered = '';
+let sortMode='priority';
+const sortStorageKey='visu-messages-sort-'+(config.instanceID||location.pathname)+'-'+config.mode;
+try{const saved=localStorage.getItem(sortStorageKey);if(['priority','date'].includes(saved))sortMode=saved;}catch(e){}
+document.getElementById('sortMode').value=sortMode;
+document.getElementById('sortMode').onchange=event=>{sortMode=event.target.value==='date'?'date':'priority';try{localStorage.setItem(sortStorageKey,sortMode);}catch(e){}render(messages);};
+function priorityOf(message){return [1,2,3].includes(Number(message.priority))?Number(message.priority):3;}
+function sortMessages(items){return [...items].sort((a,b)=>Number(Boolean(b.pinned))-Number(Boolean(a.pinned))||(!a.pinned&&sortMode==='priority'?priorityOf(a)-priorityOf(b):0)||Number(b.time||0)-Number(a.time||0)||Number(b.id)-Number(a.id));}
+
 let busy = false;
 let pending = null;
 let iconLibrary=null;
@@ -226,7 +241,8 @@ function announcementMark(kind,label){
 }
 function render(items) {
   messages=items;
-  const signature=JSON.stringify(items);
+  const ordered=sortMessages(items);
+  const signature=JSON.stringify([sortMode,ordered]);
   if(signature===rendered)return;
   rendered=signature;
   const focus=document.activeElement?.dataset?.key;
@@ -235,15 +251,16 @@ function render(items) {
   document.getElementById('count').textContent=items.length+' Einträge';
   document.getElementById('clear').disabled=!items.some(m=>!m.pinned);
   if(!items.length)list.append(element('div','empty','Keine Meldungen vorhanden.'));
-  for(const m of items){
+  for(const m of ordered){
     const card=element('article',m.pinned?'pinned':'');
+    card.dataset.priority=String(priorityOf(m));card.setAttribute('aria-label','Priorität '+priorityOf(m)+(m.pinned?' · angepinnt':''));
     const content=element('div','message-content');
     const meta=element('div','meta');
     if(m.pinned)meta.append(element('span','badge','Angepinnt'));
     const date=new Date(m.time*1000);
     const stamp=element('span','timestamp',date.toLocaleString('de-DE'));
     stamp.dataset.full=date.toLocaleString('de-DE');stamp.dataset.short=date.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-    meta.title=date.toLocaleString('de-DE')+' · '+m.source;
+    meta.title=date.toLocaleString('de-DE')+' · '+m.source+' · Priorität '+priorityOf(m);
     meta.append(stamp,document.createTextNode(' · '+m.source));
     const message=element('div','message',m.text);
     message.tabIndex=0;message.setAttribute('role','button');message.setAttribute('aria-expanded','false');
