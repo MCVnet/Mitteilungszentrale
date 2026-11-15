@@ -4,7 +4,7 @@
       "type": "List",
       "name": "Rules",
       "caption": "Melderegeln und Variablen",
-      "rowCount": 16,
+      "rowCount": 24,
       "add": true,
       "delete": true,
       "columns": [
@@ -20,7 +20,7 @@
         {
           "name": "VariableID",
           "caption": "Variable",
-          "width": "420px",
+          "width": "480px",
           "add": 0,
           "edit": {
             "type": "SelectVariable"
@@ -220,14 +220,14 @@
             {
               "type": "NumberSpinner",
               "name": "MessageMinHeight",
-              "caption": "Höhe einer Meldung (Pixel, 0 = automatisch)",
+              "caption": "Höhe einer Meldung (Standard 60 px, 0 = automatisch)",
               "minimum": 0,
               "maximum": 2000,
               "width": "350px"
             },
             {
               "type": "Label",
-              "caption": "Feste Gesamthöhe jeder Meldung einschließlich Symbol, Text und Schaltflächen. 0 = automatische Höhe. Bei wenig Platz lässt sich innerhalb der Meldung scrollen."
+              "caption": "Standard: 60 px. Bis 90 px erscheinen Text und Symbol kompakt, die Schaltflächen stehen rechts. Bei schmalen Ansichten werden die Schaltflächen als Symbole dargestellt."
             },
             {
               "type": "CheckBox",
