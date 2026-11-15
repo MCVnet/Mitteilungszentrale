@@ -11,6 +11,15 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('Limit', 200);
         $this->RegisterPropertyInteger('Height', 480);
         $this->RegisterPropertyString('BaseURL', '');
+        $this->RegisterPropertyBoolean('UseVariableIcons', true);
+        $this->RegisterPropertyBoolean('CustomColors', false);
+        $this->RegisterPropertyInteger('BackgroundColor', 0x141c25);
+        $this->RegisterPropertyInteger('MessageColor', 0x1e2a36);
+        $this->RegisterPropertyInteger('TextColor', 0xedf3f7);
+        $this->RegisterPropertyInteger('AccentColor', 0x7ed8b6);
+        $this->RegisterPropertyString('MessageSize', 'normal');
+        $this->RegisterPropertyInteger('MessageMinWidth', 240);
+        $this->RegisterPropertyInteger('MessageMaxWidth', 760);
         $this->RegisterAttributeString('Store', '{"next":1,"messages":[]}');
         $this->RegisterAttributeString('Token', '');
         $this->RegisterVariableString('HTML', 'Meldungen (WebFront / IPSView)', [
@@ -153,7 +162,7 @@ class VisuMessages extends IPSModuleStrict
 
     public function GetVisualizationTile(): string
     {
-        return $this->page(['mode' => 'sdk', 'messages' => VisuMessagesRules::sorted($this->store()['messages'])]);
+        return $this->page(['mode' => 'sdk', 'messages' => $this->messagesForVisualization($this->store())]);
     }
 
     public function RequestAction(string $Ident, mixed $Value): void
@@ -247,7 +256,7 @@ class VisuMessages extends IPSModuleStrict
         }
         if (!$api && $method === 'GET') {
             header('Content-Type: text/html; charset=utf-8');
-            header("Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'");
+            header("Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'");
             echo $this->page(['mode' => 'web', 'token' => $token, 'messages' => []]);
             return;
         }
@@ -266,7 +275,7 @@ class VisuMessages extends IPSModuleStrict
                 $request = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
                 $this->change((string) ($request['action'] ?? ''), $request['id'] ?? 0);
             }
-            echo json_encode(['messages' => VisuMessagesRules::sorted($this->store()['messages'])], JSON_THROW_ON_ERROR);
+            echo json_encode(['messages' => $this->messagesForVisualization($this->store()), 'appearance' => $this->appearance()], JSON_THROW_ON_ERROR);
         } catch (Throwable $e) {
             http_response_code(400);
             echo json_encode(['error' => $e->getMessage()]);
@@ -275,7 +284,62 @@ class VisuMessages extends IPSModuleStrict
 
     private function page(array $config): string
     {
+        $config['appearance'] = $this->appearance();
         return str_replace('__MZ_CONFIG__', json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), file_get_contents(__DIR__ . '/view.html'));
+    }
+
+    private function appearance(): array
+    {
+        $sizes = ['mini' => [160, 320], 'compact' => [200, 480], 'normal' => [240, 760], 'large' => [280, 1100]];
+        $size = $this->ReadPropertyString('MessageSize');
+        $min = max(120, min(3000, $this->ReadPropertyInteger('MessageMinWidth')));
+        $max = max($min, min(3000, $this->ReadPropertyInteger('MessageMaxWidth')));
+        [$min, $max] = $size === 'custom' ? [$min, $max] : ($sizes[$size] ?? $sizes['normal']);
+        $colors = null;
+        if ($this->ReadPropertyBoolean('CustomColors')) {
+            $colors = [];
+            foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $key => $property) {
+                $colors[$key] = sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger($property))));
+            }
+        }
+        return ['colors' => $colors, 'minWidth' => $min, 'maxWidth' => $max];
+    }
+
+    private function messagesForVisualization(array $store): array
+    {
+        $icons = [];
+        foreach ($store['messages'] as &$message) {
+            $id = (int) ($message['variableID'] ?? 0);
+            if (!array_key_exists($id, $icons)) {
+                $icons[$id] = $this->ReadPropertyBoolean('UseVariableIcons') ? $this->variableIcon($id) : '';
+            }
+            $message['icon'] = $icons[$id];
+        }
+        unset($message);
+        return VisuMessagesRules::sorted($store['messages']);
+    }
+
+    private function variableIcon(int $id): string
+    {
+        if ($id <= 0 || !IPS_VariableExists($id)) {
+            return '';
+        }
+        $icon = (string) (IPS_GetObject($id)['ObjectIcon'] ?? '');
+        if ($icon !== '') {
+            return $icon;
+        }
+        if (function_exists('IPS_GetVariablePresentation')) {
+            $presentation = IPS_GetVariablePresentation($id);
+            if (is_string($presentation['ICON'] ?? null) && $presentation['ICON'] !== '') {
+                return $presentation['ICON'];
+            }
+        }
+        $variable = IPS_GetVariable($id);
+        $profile = $variable['VariableCustomProfile'] ?: $variable['VariableProfile'];
+        if ($profile !== '' && IPS_VariableProfileExists($profile)) {
+            return (string) (IPS_GetVariableProfile($profile)['Icon'] ?? '');
+        }
+        return '';
     }
 
     private function updateLinks(): void
@@ -300,7 +364,7 @@ class VisuMessages extends IPSModuleStrict
 
     private function publish(array $store): void
     {
-        $this->UpdateVisualizationValue(json_encode(['messages' => VisuMessagesRules::sorted($store['messages'])], JSON_THROW_ON_ERROR));
+        $this->UpdateVisualizationValue(json_encode(['messages' => $this->messagesForVisualization($store), 'appearance' => $this->appearance()], JSON_THROW_ON_ERROR));
     }
 
     private function locked(callable $callback): void
