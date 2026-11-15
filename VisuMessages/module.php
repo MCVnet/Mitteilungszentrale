@@ -308,10 +308,25 @@ class VisuMessages extends IPSModuleStrict
     private function embeddedIconLibrary(): string
     {
         $port = max(1, min(65535, $this->ReadPropertyInteger('LocalWebPort')));
-        $key = 'IconLibrary' . $port;
-        $cached = $this->GetBuffer($key);
-        if ($cached !== '') {
-            return $cached;
+        // 0.10 used one oversized buffer, which Symcon truncates. Never reuse it.
+        $legacyKey = 'IconLibrary' . $port;
+        if ($this->GetBuffer($legacyKey) !== '') {
+            $this->SetBuffer($legacyKey, '');
+        }
+        $key = 'IconLibraryV2_' . $port . '_';
+        $meta = json_decode($this->GetBuffer($key . 'Meta'), true);
+        if (is_array($meta) && is_int($meta['count'] ?? null) && $meta['count'] > 0 && $meta['count'] <= 128) {
+            $encoded = '';
+            for ($index = 0; $index < $meta['count']; $index++) {
+                $encoded .= $this->GetBuffer($key . $index);
+            }
+            $compressed = base64_decode($encoded, true);
+            $cached = $compressed === false ? false : @gzdecode($compressed, 12000000);
+            if (is_string($cached) && strlen($cached) === ($meta['length'] ?? -1) &&
+                hash_equals((string) ($meta['hash'] ?? ''), hash('sha256', $cached))) {
+                return $cached;
+            }
+            $this->SetBuffer($key . 'Meta', '');
         }
         $curl = curl_init('http://127.0.0.1:' . $port . '/icons.js');
         curl_setopt_array($curl, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 1,
@@ -330,7 +345,17 @@ class VisuMessages extends IPSModuleStrict
             $this->SendDebug('Icon library', 'Lokaler Symbolsatz nicht erreichbar: HTTP ' . $status . ' ' . $error, 0);
             return '';
         }
-        $this->SetBuffer($key, $library);
+        $compressed = gzencode($library, 6);
+        if ($compressed !== false) {
+            // ASCII chunks stay well below Symcon's 256 KiB warning threshold.
+            $parts = str_split(base64_encode($compressed), 128 * 1024);
+            foreach ($parts as $index => $part) {
+                $this->SetBuffer($key . $index, $part);
+            }
+            // Publish metadata last so readers never accept a partial cache.
+            $this->SetBuffer($key . 'Meta', json_encode(['count' => count($parts),
+                'length' => strlen($library), 'hash' => hash('sha256', $library)], JSON_THROW_ON_ERROR));
+        }
         return $library;
     }
 
