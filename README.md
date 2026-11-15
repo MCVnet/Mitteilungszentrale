@@ -1,4 +1,4 @@
-# Visu-Messages · 0.23
+# Visu-Messages · 0.24
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -144,3 +144,9 @@ article .message { font-weight: 600; }
 Neue Instanzen verwenden 60 Pixel Kartenhöhe. Bereits gespeicherte Höhen bleiben erhalten; für bestehende Instanzen die Höhe auf 60 setzen. Bis einschließlich 90 Pixel gilt das kompakte Layout: Symbol links, Metadaten/Text in der Mitte, Bedienelemente rechts. Auf schmalen Displays werden die Schaltflächen als Symbole mit zugänglichen Beschriftungen dargestellt. Lange Inhalte bleiben scrollbar.
 
 Die Skalierung verwendet im kompakten Layout 60 Pixel als Referenz, darüber das bisherige 132-Pixel-Layout. Der Regelbereich zeigt jetzt 24 Zeilen, die Variablenspalte ist 480 Pixel breit.
+
+## Lesbarkeit und Aktualisierung (0.24)
+
+Kompakte Karten verwenden größere Schrift: Meldung 15 px, Metadaten 11 px und Schaltflächen 13 px bei 60 Pixel Kartenhöhe. Kopfzeile und Karten haben dieselbe maximale Breite. Unter der Liste steht nur noch der Zeitpunkt der letzten Datenaktualisierung; der permanente Pin-Hinweis entfällt.
+
+Die Integer-Variable `LastUpdate` („Letzte Aktualisierung“, Profil `~UnixTimestamp`) enthält den gespeicherten Symcon-Zeitpunkt. Sie wird zusammen mit den Modulvariablen ein-/ausgeblendet. Meldungsänderungen und das Übernehmen der Konfiguration setzen den Zeitpunkt; reine Refresh-/Web-Abfragen ändern ihn nicht. SDK, Web-API und JSON-Ausgabe enthalten denselben Wert als `updatedAt`.
