@@ -73,7 +73,7 @@ class VisuMessages extends IPSModuleStrict
                 if (!is_array($rule)) {
                     continue;
                 }
-                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50, 'PushEnabled' => false, 'PushVisuID' => 0, 'PushTitle' => 'Visu-Messages', 'PushTargetID' => 0] as $field => $default) {
+                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50, 'PushEnabled' => false, 'PushVisuID' => 0, 'PushTitle' => 'Visu-Messages', 'PushTargetID' => 0, 'PushRepeats' => 0, 'PushInterval' => 60] as $field => $default) {
                     if (!array_key_exists($field, $rule)) {
                         $rule[$field] = $default;
                         $changed = true;
@@ -217,7 +217,12 @@ class VisuMessages extends IPSModuleStrict
             $rule['PushVisuID'] = (int) ($rule['PushVisuID'] ?? 0);
             $rule['PushTitle'] = (string) ($rule['PushTitle'] ?? 'Visu-Messages');
             $rule['PushTargetID'] = (int) ($rule['PushTargetID'] ?? 0);
+            $rule['PushRepeats'] = (int) ($rule['PushRepeats'] ?? 0);
+            $rule['PushInterval'] = (int) ($rule['PushInterval'] ?? 60);
             if ($rule['PushEnabled']) {
+                if ($rule['PushRepeats'] < 0 || $rule['PushRepeats'] > 100 || $rule['PushInterval'] < 1 || $rule['PushInterval'] > 86400) {
+                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Push-Wiederholungen 0–100, Abstand 1–86400 Sekunden.');
+                }
                 if (!IPS_InstanceExists($rule['PushVisuID']) || !in_array(IPS_GetInstance($rule['PushVisuID'])['ModuleInfo']['ModuleID'], [self::TILE_MODULE, self::WEBFRONT_MODULE], true)) {
                     throw new InvalidArgumentException('Regel ' . ($index + 1) . ': eine Kachel- oder WebFront-Visualisierung für Push auswählen.');
                 }
@@ -275,7 +280,7 @@ class VisuMessages extends IPSModuleStrict
                     $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
                     $queue[] = ['kind' => 'push', 'messageID' => $messageID, 'device' => $rule['PushVisuID'], 'text' => $text,
                         'title' => $rule['PushTitle'], 'target' => $rule['PushTargetID'] ?: $this->InstanceID,
-                        'remaining' => 1, 'interval' => 1, 'due' => time(), 'ruleKey' => $rule['AnnouncementKey'],
+                        'remaining' => 1 + $rule['PushRepeats'], 'interval' => $rule['PushInterval'], 'due' => time(), 'ruleKey' => $rule['AnnouncementKey'],
                         'generation' => $this->ReadAttributeInteger('AnnouncementGeneration')];
                     $this->writeAnnouncementQueue($queue);
                 }
