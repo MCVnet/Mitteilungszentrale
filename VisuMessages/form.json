@@ -416,17 +416,120 @@
         },
         {
           "type": "ExpansionPanel",
-          "caption": "Darstellung · Symbole und Größe",
+          "caption": "Darstellung",
           "expanded": false,
           "items": [
             {
-              "type": "CheckBox",
-              "name": "UseVariableIcons",
-              "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+              "type": "ExpansionPanel",
+              "caption": "Kartenformat",
+              "expanded": true,
+              "items": [
+                {
+                  "type": "RowLayout",
+                  "items": [
+                    {
+                      "type": "Select",
+                      "name": "MessageSize",
+                      "caption": "Kartenbreite",
+                      "options": [
+                        {
+                          "caption": "Mini · bis 320 px",
+                          "value": "mini"
+                        },
+                        {
+                          "caption": "Kompakt · bis 480 px",
+                          "value": "compact"
+                        },
+                        {
+                          "caption": "Normal · bis 760 px",
+                          "value": "normal"
+                        },
+                        {
+                          "caption": "Groß · bis 1100 px",
+                          "value": "large"
+                        },
+                        {
+                          "caption": "Benutzerdefiniert",
+                          "value": "custom"
+                        }
+                      ],
+                      "width": "270px"
+                    },
+                    {
+                      "type": "NumberSpinner",
+                      "name": "MessageMinHeight",
+                      "caption": "Kartenhöhe (px, 0 = automatisch)",
+                      "minimum": 0,
+                      "maximum": 2000,
+                      "width": "270px"
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Benutzerdefinierte Breite",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "Label",
+                      "caption": "Diese Werte gelten nur bei Kartenbreite „Benutzerdefiniert“."
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "MessageMinWidth",
+                          "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
+                          "minimum": 120,
+                          "maximum": 3000,
+                          "width": "220px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "MessageMaxWidth",
+                          "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
+                          "minimum": 120,
+                          "maximum": 3000,
+                          "width": "220px"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             },
             {
-              "type": "RowLayout",
+              "type": "ExpansionPanel",
+              "caption": "Schrift und Symbole",
+              "expanded": false,
               "items": [
+                {
+                  "type": "RowLayout",
+                  "items": [
+                    {
+                      "type": "NumberSpinner",
+                      "name": "MessageFontSize",
+                      "caption": "Meldungstext (px)",
+                      "minimum": 10,
+                      "maximum": 30,
+                      "width": "240px"
+                    },
+                    {
+                      "type": "NumberSpinner",
+                      "name": "MessageMetaFontSize",
+                      "caption": "Zeit und Quelle (px)",
+                      "minimum": 9,
+                      "maximum": 20,
+                      "width": "240px"
+                    }
+                  ]
+                },
+                {
+                  "type": "CheckBox",
+                  "name": "UseVariableIcons",
+                  "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+                },
                 {
                   "type": "NumberSpinner",
                   "name": "IconSize",
@@ -436,80 +539,15 @@
                   "width": "180px"
                 },
                 {
-                  "type": "Select",
-                  "name": "MessageSize",
-                  "caption": "Breite der Meldungen",
-                  "options": [
-                    {
-                      "caption": "Mini · bis 320 px",
-                      "value": "mini"
-                    },
-                    {
-                      "caption": "Kompakt · bis 480 px",
-                      "value": "compact"
-                    },
-                    {
-                      "caption": "Normal · bis 760 px",
-                      "value": "normal"
-                    },
-                    {
-                      "caption": "Groß · bis 1100 px",
-                      "value": "large"
-                    },
-                    {
-                      "caption": "Benutzerdefiniert",
-                      "value": "custom"
-                    }
-                  ],
-                  "width": "260px"
-                }
-              ]
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "NumberSpinner",
-                  "name": "MessageMinWidth",
-                  "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
-                  "minimum": 120,
-                  "maximum": 3000,
-                  "width": "220px"
+                  "type": "CheckBox",
+                  "name": "MessageScaleContents",
+                  "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
                 },
                 {
-                  "type": "NumberSpinner",
-                  "name": "MessageMaxWidth",
-                  "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
-                  "minimum": 120,
-                  "maximum": 3000,
-                  "width": "220px"
+                  "type": "Label",
+                  "caption": "Mini passt sich der tatsächlichen Kartenbreite an. Text antippen, um die Meldung vollständig aufzuklappen."
                 }
               ]
-            },
-            {
-              "type": "NumberSpinner",
-              "name": "MessageMinHeight",
-              "caption": "Höhe einer Meldung (Standard 60 px, 0 = automatisch)",
-              "minimum": 0,
-              "maximum": 2000,
-              "width": "350px"
-            },
-            {
-              "type": "Label",
-              "caption": "Standard: 60 px. Bis 90 px erscheinen Text und Symbol kompakt, die Schaltflächen stehen rechts. Bei schmalen Ansichten werden die Schaltflächen als Symbole dargestellt."
-            },
-            {
-              "type": "CheckBox",
-              "name": "MessageScaleContents",
-              "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
-            },
-            {
-              "type": "NumberSpinner",
-              "name": "Height",
-              "caption": "HTML-Box: Höhe (Pixel)",
-              "minimum": 200,
-              "maximum": 2000,
-              "width": "220px"
             },
             {
               "type": "ExpansionPanel",
@@ -572,6 +610,21 @@
                       ]
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "type": "ExpansionPanel",
+              "caption": "HTML-Box",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "NumberSpinner",
+                  "name": "Height",
+                  "caption": "HTML-Box: Höhe (Pixel)",
+                  "minimum": 200,
+                  "maximum": 2000,
+                  "width": "220px"
                 }
               ]
             }
