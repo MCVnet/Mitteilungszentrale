@@ -1,0 +1,11 @@
+{
+  "id": "{C13DA055-AF58-4504-A084-C5355DB865A0}",
+  "name": "Visu-Messages",
+  "type": 3,
+  "vendor": "",
+  "aliases": ["Visu-Messages"],
+  "parentRequirements": [],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "VMMSG"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "{726A8C3E-D761-46C3-BE6C-C9306A8C1114}",
+  "author": "Matthias Vogel",
+  "name": "Visu-Messages",
+  "url": "https://github.com/MCVnet/Symcon-Visu-Messages",
+  "compatibility": {
+    "version": "9.0"
+  },
+  "version": "0.1",
+  "build": 1,
+  "date": 1794700800
+}

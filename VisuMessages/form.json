@@ -1,0 +1,27 @@
+{
+  "elements": [
+    {"type":"Label","caption":"Meldungen entstehen beim Wechsel von Bedingung nicht erfüllt zu erfüllt. Beim Start oder Speichern werden keine bestehenden Zustände nachgemeldet."},
+    {"type":"List","name":"Rules","caption":"Melderegeln","rowCount":8,"add":true,"delete":true,"columns":[
+      {"name":"Enabled","caption":"Aktiv","width":"65px","add":true,"edit":{"type":"CheckBox"}},
+      {"name":"VariableID","caption":"Variable","width":"220px","add":0,"edit":{"type":"SelectVariable"}},
+      {"name":"Operator","caption":"Bedingung","width":"140px","add":"eq","edit":{"type":"Select","options":[
+        {"caption":"gleich","value":"eq"},{"caption":"ungleich","value":"ne"},
+        {"caption":"kleiner","value":"lt"},{"caption":"kleiner / gleich","value":"le"},
+        {"caption":"größer","value":"gt"},{"caption":"größer / gleich","value":"ge"},
+        {"caption":"Text enthält","value":"contains"}
+      ]}},
+      {"name":"Value","caption":"Vergleichswert","width":"120px","add":"true","edit":{"type":"ValidationTextBox"}},
+      {"name":"Text","caption":"Nachricht","width":"auto","add":"{name}: {value}","edit":{"type":"ValidationTextBox"}}
+    ]},
+    {"type":"Label","caption":"Platzhalter: {name} Variablenname, {value} neuer Rohwert, {old} alter Rohwert, {id} Variablen-ID. Boolesche Werte: true/false. Texte: exakte Groß-/Kleinschreibung."},
+    {"type":"NumberSpinner","name":"Limit","caption":"Maximale Anzahl nicht angepinnter Meldungen","minimum":1,"maximum":5000},
+    {"type":"NumberSpinner","name":"Height","caption":"Höhe der HTML-Box in Pixeln","minimum":200,"maximum":2000},
+    {"type":"ValidationTextBox","name":"BaseURL","caption":"Symcon-Basisadresse für IPSView, z. B. https://symcon.example.de (leer = relativ)"},
+    {"type":"Label","caption":"Die WebView-Adresse enthält einen geheimen Zugriffsschlüssel. Wer die Adresse kennt, kann Meldungen lesen und bedienen. Bei externer Nutzung HTTPS oder VPN verwenden."}
+  ],
+  "actions": [
+    {"type":"Button","caption":"Testmeldung erzeugen","onClick":"VMMSG_AddTestMessage($id);"},
+    {"type":"Button","caption":"WebView-Zugriffsschlüssel erneuern","onClick":"VMMSG_RotateAccessKey($id);"}
+  ],
+  "status":[{"code":200,"icon":"error","caption":"Ungültige Melderegel oder Einstellung – siehe Konfigurationshinweis"}]
+}

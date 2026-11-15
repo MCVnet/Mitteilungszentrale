@@ -1,0 +1,316 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/Rules.php';
+
+class VisuMessages extends IPSModuleStrict
+{
+    public function Create(): void
+    {
+        parent::Create();
+        $this->RegisterPropertyString('Rules', '[]');
+        $this->RegisterPropertyInteger('Limit', 200);
+        $this->RegisterPropertyInteger('Height', 480);
+        $this->RegisterPropertyString('BaseURL', '');
+        $this->RegisterAttributeString('Store', '{"next":1,"messages":[]}');
+        $this->RegisterAttributeString('Token', '');
+        $this->RegisterVariableString('HTML', 'Meldungen (WebFront / IPSView)', [
+            'PRESENTATION' => VARIABLE_PRESENTATION_LEGACY, 'PROFILE' => '~HTMLBox'
+        ], 0);
+        $this->RegisterVariableString('URL', 'WebView-Adresse (mit Zugriffsschlüssel)', [
+            'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION
+        ], 10);
+        IPS_SetHidden($this->GetIDForIdent('URL'), true);
+        $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML);
+        $this->RegisterHook('visu-messages-' . $this->InstanceID);
+        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+    }
+
+    public function ApplyChanges(): void
+    {
+        parent::ApplyChanges();
+        if ($this->ReadAttributeString('Token') === '') {
+            $this->WriteAttributeString('Token', bin2hex(random_bytes(32)));
+        }
+        if (IPS_GetKernelRunlevel() !== KR_READY) {
+            return;
+        }
+        $this->configure();
+    }
+
+    private function configure(): void
+    {
+        $this->locked(function (): void {
+            foreach ($this->GetReferenceList() as $id) {
+                $this->UnregisterMessage($id, VM_UPDATE);
+                $this->UnregisterMessage($id, VM_DELETE);
+                $this->UnregisterReference($id);
+            }
+            try {
+                $rules = $this->validatedRules();
+                if ($this->ReadPropertyInteger('Limit') < 1 || $this->ReadPropertyInteger('Limit') > 5000) {
+                    throw new InvalidArgumentException('Speicherlimit muss zwischen 1 und 5000 liegen.');
+                }
+                $base = rtrim($this->ReadPropertyString('BaseURL'), '/');
+                if ($base !== '' && (!filter_var($base, FILTER_VALIDATE_URL) || !in_array(parse_url($base, PHP_URL_SCHEME), ['http', 'https'], true) || parse_url($base, PHP_URL_QUERY) !== null || parse_url($base, PHP_URL_FRAGMENT) !== null)) {
+                    throw new InvalidArgumentException('Basisadresse muss eine HTTP(S)-Adresse ohne Query oder Fragment sein.');
+                }
+                foreach ($rules as $rule) {
+                    $id = $rule['VariableID'];
+                    $this->RegisterReference($id);
+                    $this->RegisterMessage($id, VM_UPDATE);
+                    $this->RegisterMessage($id, VM_DELETE);
+                }
+                $this->SetBuffer('ActiveRules', json_encode($rules, JSON_THROW_ON_ERROR));
+                $this->SetBuffer('Error', '');
+                $this->SetStatus(102);
+            } catch (Throwable $e) {
+                $this->SetBuffer('ActiveRules', '[]');
+                $this->SetBuffer('Error', $e->getMessage());
+                $this->SetStatus(200);
+            }
+            $this->updateLinks();
+            $store = $this->store();
+            $store['messages'] = VisuMessagesRules::trim($store['messages'], max(1, $this->ReadPropertyInteger('Limit')));
+            $this->save($store);
+        });
+    }
+
+    private function validatedRules(): array
+    {
+        $rules = json_decode($this->ReadPropertyString('Rules'), true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($rules) || !array_is_list($rules)) {
+            throw new InvalidArgumentException('Regeln müssen eine Liste sein.');
+        }
+        $active = [];
+        foreach ($rules as $index => $rule) {
+            if (!($rule['Enabled'] ?? true)) {
+                continue;
+            }
+            $id = (int) ($rule['VariableID'] ?? 0);
+            if (!IPS_VariableExists($id) || IPS_GetParent($id) === $this->InstanceID) {
+                throw new InvalidArgumentException('Regel ' . ($index + 1) . ': gültige externe Variable auswählen.');
+            }
+            $type = IPS_GetVariable($id)['VariableType'];
+            $op = $rule['Operator'] ?? 'eq';
+            $allowed = match ($type) {
+                0 => ['eq', 'ne'],
+                1, 2 => ['eq', 'ne', 'lt', 'le', 'gt', 'ge'],
+                3 => ['eq', 'ne', 'contains']
+            };
+            if (!in_array($op, $allowed, true) || trim($rule['Text'] ?? '') === '') {
+                throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Operator oder Nachrichtentext ungültig.');
+            }
+            $rule['VariableID'] = $id;
+            $rule['Operator'] = $op;
+            $rule['Target'] = VisuMessagesRules::target((string) ($rule['Value'] ?? ''), $type);
+            $active[] = $rule;
+        }
+        return $active;
+    }
+
+    public function MessageSink(int $TimeStamp, int $SenderID, int $Message, array $Data): void
+    {
+        if ($Message === IPS_KERNELMESSAGE && ($Data[0] ?? null) === KR_READY) {
+            $this->configure();
+            return;
+        }
+        if ($Message === VM_DELETE) {
+            $this->configure();
+            return;
+        }
+        if ($Message !== VM_UPDATE || !($Data[1] ?? false) || !array_key_exists(2, $Data)) {
+            return;
+        }
+        $this->locked(function () use ($SenderID, $Data): void {
+            $store = $this->store();
+            $changed = false;
+            foreach (json_decode($this->GetBuffer('ActiveRules') ?: '[]', true) as $rule) {
+                if ($rule['VariableID'] !== $SenderID) {
+                    continue;
+                }
+                if (!VisuMessagesRules::matches($Data[0], $rule['Operator'], $rule['Target']) ||
+                    VisuMessagesRules::matches($Data[2], $rule['Operator'], $rule['Target'])) {
+                    continue;
+                }
+                $format = static fn(mixed $value): string => is_bool($value) ? ($value ? 'true' : 'false') : (string) $value;
+                $text = strtr($rule['Text'], [
+                    '{name}' => IPS_GetName($SenderID), '{value}' => $format($Data[0]),
+                    '{old}' => $format($Data[2]), '{id}' => (string) $SenderID
+                ]);
+                array_unshift($store['messages'], [
+                    'id' => $store['next']++, 'time' => time(), 'text' => $text,
+                    'source' => IPS_GetName($SenderID), 'variableID' => $SenderID, 'pinned' => false
+                ]);
+                $changed = true;
+            }
+            if ($changed) {
+                $store['messages'] = VisuMessagesRules::trim($store['messages'], $this->ReadPropertyInteger('Limit'));
+                $this->save($store);
+            }
+        });
+    }
+
+    public function GetVisualizationTile(): string
+    {
+        return $this->page(['mode' => 'sdk', 'messages' => VisuMessagesRules::sorted($this->store()['messages'])]);
+    }
+
+    public function RequestAction(string $Ident, mixed $Value): void
+    {
+        if ($Ident === 'Refresh') {
+            $this->locked(fn() => $this->publish($this->store()));
+            return;
+        }
+        $this->change($Ident, $Value);
+    }
+
+    private function change(string $action, mixed $value): void
+    {
+        if (!in_array($action, ['Pin', 'Unpin', 'Delete', 'Clear'], true)) {
+            throw new InvalidArgumentException('Unbekannte Aktion.');
+        }
+        if ($action !== 'Clear' && (!is_int($value) || $value < 1)) {
+            throw new InvalidArgumentException('Ungültige Meldungs-ID.');
+        }
+        $this->locked(function () use ($action, $value): void {
+            $store = $this->store();
+            foreach ($store['messages'] as $key => &$item) {
+                if ($action === 'Clear') {
+                    if (!$item['pinned']) {
+                        unset($store['messages'][$key]);
+                    }
+                } elseif ($item['id'] === $value) {
+                    if ($action === 'Delete') {
+                        // Angepinnte Einträge müssen zuerst gelöst werden.
+                        if ($item['pinned']) {
+                            throw new InvalidArgumentException('Meldung vor dem Löschen lösen.');
+                        }
+                        unset($store['messages'][$key]);
+                    } else {
+                        $item['pinned'] = $action === 'Pin';
+                    }
+                }
+            }
+            unset($item);
+            $store['messages'] = VisuMessagesRules::trim(array_values($store['messages']), $this->ReadPropertyInteger('Limit'));
+            $this->save($store);
+        });
+    }
+
+    public function AddTestMessage(): void
+    {
+        $this->locked(function (): void {
+            $store = $this->store();
+            array_unshift($store['messages'], [
+                'id' => $store['next']++, 'time' => time(), 'text' => 'Die Visu-Messages ist bereit.',
+                'source' => 'Testmeldung', 'variableID' => 0, 'pinned' => false
+            ]);
+            $store['messages'] = VisuMessagesRules::trim($store['messages'], max(1, $this->ReadPropertyInteger('Limit')));
+            $this->save($store);
+        });
+    }
+
+    public function RotateAccessKey(): void
+    {
+        $this->locked(function (): void {
+            $this->WriteAttributeString('Token', bin2hex(random_bytes(32)));
+            $this->updateLinks();
+        });
+    }
+
+    protected function ProcessHookData(): void
+    {
+        header('Cache-Control: no-store');
+        header('Referrer-Policy: no-referrer');
+        header('X-Content-Type-Options: nosniff');
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $api = isset($_GET['api']);
+        $token = $api ? ($_SERVER['HTTP_X_MZ_TOKEN'] ?? '') : ($_GET['key'] ?? '');
+        $expected = $this->ReadAttributeString('Token');
+        if (!is_string($token) || $expected === '' || !hash_equals($expected, $token)) {
+            http_response_code(403);
+            echo 'Zugriff verweigert.';
+            return;
+        }
+        if (!$api && $method === 'GET') {
+            header('Content-Type: text/html; charset=utf-8');
+            header("Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'");
+            echo $this->page(['mode' => 'web', 'token' => $token, 'messages' => []]);
+            return;
+        }
+        header('Content-Type: application/json; charset=utf-8');
+        try {
+            if (!$api || !in_array($method, ['GET', 'POST'], true)) {
+                http_response_code(405);
+                echo '{"error":"Methode nicht erlaubt"}';
+                return;
+            }
+            if ($method === 'POST') {
+                $body = file_get_contents('php://input', false, null, 0, 2049);
+                if (strlen($body) > 2048) {
+                    throw new InvalidArgumentException('Anfrage zu groß.');
+                }
+                $request = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
+                $this->change((string) ($request['action'] ?? ''), $request['id'] ?? 0);
+            }
+            echo json_encode(['messages' => VisuMessagesRules::sorted($this->store()['messages'])], JSON_THROW_ON_ERROR);
+        } catch (Throwable $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    private function page(array $config): string
+    {
+        return str_replace('__MZ_CONFIG__', json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), file_get_contents(__DIR__ . '/view.html'));
+    }
+
+    private function updateLinks(): void
+    {
+        $path = '/hook/visu-messages-' . $this->InstanceID . '?key=' . $this->ReadAttributeString('Token');
+        $url = rtrim($this->ReadPropertyString('BaseURL'), '/') . $path;
+        $this->SetValue('URL', $url);
+        $height = max(200, min(2000, $this->ReadPropertyInteger('Height')));
+        $this->SetValue('HTML', '<iframe title="Visu-Messages" referrerpolicy="no-referrer" src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" style="width:100%;height:' . $height . 'px;border:0"></iframe>');
+    }
+
+    private function store(): array
+    {
+        return json_decode($this->ReadAttributeString('Store'), true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    private function save(array $store): void
+    {
+        $this->WriteAttributeString('Store', json_encode($store, JSON_THROW_ON_ERROR));
+        $this->publish($store);
+    }
+
+    private function publish(array $store): void
+    {
+        $this->UpdateVisualizationValue(json_encode(['messages' => VisuMessagesRules::sorted($store['messages'])], JSON_THROW_ON_ERROR));
+    }
+
+    private function locked(callable $callback): void
+    {
+        $name = 'Visu-Messages.' . $this->InstanceID;
+        if (!IPS_SemaphoreEnter($name, 5000)) {
+            throw new RuntimeException('Visu-Messages beschäftigt. Bitte erneut versuchen.');
+        }
+        try {
+            $callback();
+        } finally {
+            IPS_SemaphoreLeave($name);
+        }
+    }
+
+    public function GetConfigurationForm(): string
+    {
+        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        $error = $this->GetBuffer('Error');
+        if ($error !== '') {
+            $form['elements'][] = ['type' => 'Label', 'caption' => 'Konfigurationsfehler: ' . $error];
+        }
+        $form['actions'][] = ['type' => 'Label', 'caption' => 'WebView-Adresse: ' . $this->GetValue('URL')];
+        return json_encode($form, JSON_THROW_ON_ERROR);
+    }
+}
