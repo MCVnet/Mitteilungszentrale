@@ -20,7 +20,8 @@ class VisuMessages extends IPSModuleStrict
             'PRESENTATION' => VARIABLE_PRESENTATION_VALUE_PRESENTATION
         ], 10);
         IPS_SetHidden($this->GetIDForIdent('URL'), true);
-        $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML);
+        // HTML-SDK: documented value 1; symbolic constant is unavailable in some 9.0 builds.
+        $this->SetVisualizationType(1);
         $this->RegisterHook('visu-messages-' . $this->InstanceID);
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
     }
