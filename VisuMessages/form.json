@@ -110,6 +110,20 @@
           "visible": false,
           "save": true,
           "add": 60
+        },
+        {
+          "name": "AnnouncementOwnVolume",
+          "caption": "Eigene Lautstärke",
+          "visible": false,
+          "save": true,
+          "add": false
+        },
+        {
+          "name": "AnnouncementVolume",
+          "caption": "Lautstärke (%)",
+          "visible": false,
+          "save": true,
+          "add": 50
         }
       ],
       "width": "100%",
@@ -201,6 +215,22 @@
               "minimum": 1,
               "maximum": 86400,
               "name": "AnnouncementInterval"
+            },
+            {
+              "type": "CheckBox",
+              "name": "AnnouncementOwnVolume",
+              "caption": "Eigene Lautstärke für diese Meldung verwenden"
+            },
+            {
+              "type": "NumberSpinner",
+              "name": "AnnouncementVolume",
+              "caption": "Durchsage-Lautstärke (%)",
+              "minimum": 1,
+              "maximum": 100
+            },
+            {
+              "type": "Label",
+              "caption": "Ohne eigene Lautstärke gilt die Vorgabe der Durchsage-Instanz. Mit eigener Lautstärke wird deren Einstellung für jeden Aufruf vorübergehend gesetzt und anschließend wiederhergestellt."
             },
             {
               "type": "Label",
