@@ -137,7 +137,7 @@
             },
             {
               "type": "Label",
-              "caption": "Zeigt die WebView-Adresse, die Gesamtzahl, angepinnte und nicht angepinnte Meldungen sowie Meldungsdaten als JSON. Nach Änderungen übernehmen sind die Variablen unter dieser Instanz sichtbar. Die Daten werden automatisch aktualisiert."
+              "caption": "Zeigt die WebView-Adresse, Meldungszähler, Meldungsdaten als JSON und Letzte Aktualisierung. Nach Änderungen übernehmen sind die Variablen unter dieser Instanz sichtbar."
             },
             {
               "type": "Label",
