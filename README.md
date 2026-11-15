@@ -1,4 +1,4 @@
-# Visu-Messages · 0.24
+# Visu-Messages · 0.25
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -150,3 +150,9 @@ Die Skalierung verwendet im kompakten Layout 60 Pixel als Referenz, darüber das
 Kompakte Karten verwenden größere Schrift: Meldung 15 px, Metadaten 11 px und Schaltflächen 13 px bei 60 Pixel Kartenhöhe. Kopfzeile und Karten haben dieselbe maximale Breite. Unter der Liste steht nur noch der Zeitpunkt der letzten Datenaktualisierung; der permanente Pin-Hinweis entfällt.
 
 Die Integer-Variable `LastUpdate` („Letzte Aktualisierung“, Profil `~UnixTimestamp`) enthält den gespeicherten Symcon-Zeitpunkt. Sie wird zusammen mit den Modulvariablen ein-/ausgeblendet. Meldungsänderungen und das Übernehmen der Konfiguration setzen den Zeitpunkt; reine Refresh-/Web-Abfragen ändern ihn nicht. SDK, Web-API und JSON-Ausgabe enthalten denselben Wert als `updatedAt`.
+
+## Übergeordnete Instanz im Nachrichtentext (0.25)
+
+Der Platzhalter `{parent}` liefert den Namen des direkten übergeordneten Objekts der überwachten Variable (bei Gerätevariablen üblicherweise die Instanz). Neue Regeln verwenden `{parent} · {name}: {value}`. Beispiel: `EG | Büro links | Fenster-offen · Value: true`. Bei Variablen direkt unter der Wurzel lautet der übergeordnete Name `IP-Symcon`.
+
+Bestehende Regeln mit exakt dem bisherigen Standardtext `{name}: {value}` werden beim Aktualisieren auf den neuen Standard erweitert. Individuelle Texte sowie bereits gespeicherte Meldungen bleiben unverändert.
