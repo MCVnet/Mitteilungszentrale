@@ -127,6 +127,26 @@
         },
         {
           "type": "ExpansionPanel",
+          "caption": "Modulvariablen und Daten",
+          "expanded": false,
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "ShowModuleData",
+              "caption": "Modulvariablen und Daten im Objektbaum anzeigen"
+            },
+            {
+              "type": "Label",
+              "caption": "Zeigt die WebView-Adresse, die Gesamtzahl, angepinnte und nicht angepinnte Meldungen sowie Meldungsdaten als JSON. Nach Änderungen übernehmen sind die Variablen unter dieser Instanz sichtbar. Die Daten werden automatisch aktualisiert."
+            },
+            {
+              "type": "Label",
+              "caption": "Die JSON-Daten sind eine Ausgabe zur Weiterverwendung. Änderungen daran ändern nicht die gespeicherten Meldungen. Die WebView-Adresse enthält den Zugriffsschlüssel."
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
           "caption": "Darstellung · Symbole und Größe",
           "expanded": false,
           "items": [
