@@ -43,7 +43,10 @@ article button{font-size:calc(15px*var(--s));padding:calc(9px*var(--s)) calc(12p
  :root[data-compact="true"] article button[aria-pressed="true"]::before{content:'↶'}
 }
 </style>
-</head>
+<style>
+.announcement-mark{display:inline-flex;vertical-align:-.16em;width:1em;height:1em;margin-left:6px;color:var(--accent)}
+.announcement-mark svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+</style></head>
 <body><main>
 <header><h1>Meldungen</h1><span id="count" class="count"></span><button id="clear" type="button">Nicht angepinnte löschen</button></header>
 <div id="clearConfirmation" hidden role="group" aria-label="Sammellöschen bestätigen" style="margin-bottom:16px">
@@ -187,6 +190,13 @@ function updated(timestamp){
 }
 function report(text, error) { status.textContent = text; status.className = error ? 'error' : ''; }
 function element(tag, className, text) { const e=document.createElement(tag); if(className)e.className=className; if(text!==undefined)e.textContent=text; return e; }
+function announcementMark(kind,label){
+  const mark=element('span','announcement-mark');mark.setAttribute('role','img');mark.setAttribute('aria-label',label);mark.title=label;
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d',kind==='speaker'?'M11 5 6 9H3v6h3l5 4V5Zm4 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14':'M4 8h13l-3-3m3 3-3 3M20 16H7l3 3m-3-3 3-3');
+  svg.append(path);mark.append(svg);return mark;
+}
 function render(items) {
   messages=items;
   const signature=JSON.stringify(items);
@@ -203,7 +213,14 @@ function render(items) {
     const meta=element('div','meta');
     if(m.pinned)meta.append(element('span','badge','Angepinnt'));
     meta.append(document.createTextNode(new Date(m.time*1000).toLocaleString('de-DE')+' · '+m.source));
-    content.append(meta,element('div','message',m.text));
+    const message=element('div','message',m.text);
+    if(m.announcement&&m.announcement.enabled){
+      const a=m.announcement;
+      const volume=Number.isFinite(a.volume)?' · Lautstärke '+a.volume+' %':'';
+      message.append(announcementMark('speaker','Durchsage hinterlegt'+volume));
+      if(Number(a.repeats)>0)message.append(announcementMark('repeat',a.repeats+' zusätzliche Wiederholungen · Abstand '+a.interval+' Sekunden'));
+    }
+    content.append(meta,message);
     const actions=element('div','actions');
     const pin=element('button','',m.pinned?'Lösen':'Anpinnen'); pin.type='button'; pin.dataset.key='pin-'+m.id; pin.setAttribute('aria-pressed',String(m.pinned));pin.setAttribute('aria-label',m.pinned?'Lösen':'Anpinnen');pin.title=m.pinned?'Lösen':'Anpinnen';
     pin.onclick=()=>act(m.pinned?'Unpin':'Pin',m.id);
