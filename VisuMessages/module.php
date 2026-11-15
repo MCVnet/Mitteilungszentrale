@@ -192,6 +192,7 @@ class VisuMessages extends IPSModuleStrict
         }
         $active = [];
         $availability = [];
+        $announcementInstalled = in_array(self::ANNOUNCEMENT_MODULE, IPS_GetModuleList(), true);
         $this->SetBuffer('AvailabilityInfo', '[]');
         foreach ($rules as $index => $rule) {
             if (!($rule['Enabled'] ?? true)) {
@@ -230,7 +231,7 @@ class VisuMessages extends IPSModuleStrict
                     throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Durchsage-Lautstärke muss zwischen 1 und 100 Prozent liegen.');
                 }
                 $device = $rule['AnnouncementID'];
-                if (!IPS_InstanceExists($device) || IPS_GetInstance($device)['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
+                if (!$announcementInstalled || !IPS_InstanceExists($device) || IPS_GetInstance($device)['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
                     $rule['AnnouncementAvailable'] = false;
                     $availability[] = 'Regel ' . ($index + 1) . ': Durchsage-Instanz fehlt oder ist ungeeignet. Die Meldungsliste funktioniert weiterhin.';
                 }
@@ -916,17 +917,47 @@ class VisuMessages extends IPSModuleStrict
     public function GetConfigurationForm(): string
     {
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        $audioInstalled = in_array(self::ANNOUNCEMENT_MODULE, IPS_GetModuleList(), true);
+        $audioReady = $audioInstalled && IPS_GetInstanceListByModuleID(self::ANNOUNCEMENT_MODULE) !== [];
         $options = [['caption' => 'Bitte Ziel-Visualisierung auswählen', 'value' => 0]];
         foreach ([self::TILE_MODULE => 'Kachelvisu', self::WEBFRONT_MODULE => 'WebFront'] as $module => $type) {
             foreach (IPS_GetInstanceListByModuleID($module) as $instance) {
                 $options[] = ['caption' => $type . ' · ' . IPS_GetName($instance) . ' (#' . $instance . ')', 'value' => $instance];
             }
         }
+        $disableInputs = static function (array &$items, bool $enabled) use (&$disableInputs): void {
+            foreach ($items as &$item) {
+                if (($item['type'] ?? '') !== 'Label' && isset($item['name'])) {
+                    $item['enabled'] = $enabled;
+                }
+                if (isset($item['items'])) {
+                    $disableInputs($item['items'], $enabled);
+                }
+            }
+            unset($item);
+        };
         foreach ($form['elements'][0]['form'] as &$section) {
+            if (($section['caption'] ?? '') === 'Durchsage und Wiederholung') {
+                $disableInputs($section['items'], $audioReady);
+                foreach ($section['items'] as &$field) {
+                    if (($field['name'] ?? '') === 'AnnouncementAvailabilityHint') {
+                        $field['visible'] = !$audioReady;
+                        $field['caption'] = !$audioInstalled
+                            ? 'Das Modul Durchsage ist nicht installiert. Diese Option ist deshalb deaktiviert. Meldungsliste und andere Funktionen bleiben nutzbar.'
+                            : 'Das Modul Durchsage ist installiert, aber es ist noch keine Durchsage-Instanz eingerichtet. Nach dem Anlegen das Formular neu öffnen.';
+                    }
+                }
+                unset($field);
+            }
             if (($section['caption'] ?? '') === 'Push-Benachrichtigung') {
+                $pushReady = count($options) > 1;
+                $disableInputs($section['items'], $pushReady);
                 foreach ($section['items'] as &$field) {
                     if (($field['name'] ?? '') === 'PushVisuID') {
                         $field['options'] = $options;
+                    }
+                    if (($field['name'] ?? '') === 'PushAvailabilityHint') {
+                        $field['visible'] = !$pushReady;
                     }
                 }
                 unset($field);
@@ -947,27 +978,6 @@ class VisuMessages extends IPSModuleStrict
                             }
                         }
                         unset($group);
-                    }
-                }
-                unset($panel);
-            }
-        }
-        unset($element);
-        $audioCount = count(IPS_GetInstanceListByModuleID(self::ANNOUNCEMENT_MODULE));
-        $visuCount = count(IPS_GetInstanceListByModuleID(self::TILE_MODULE)) + count(IPS_GetInstanceListByModuleID(self::WEBFRONT_MODULE));
-        $info = [
-            ['type' => 'Label', 'caption' => $audioCount > 0 ? 'Durchsage: ' . $audioCount . ' Instanz(en) vorhanden.' : 'Durchsage: keine Instanz vorhanden. Optional das Modul Durchsage installieren und eine Instanz einrichten. Die Meldungsliste benötigt es nicht.'],
-            ['type' => 'Label', 'caption' => $visuCount > 0 ? 'Push: ' . $visuCount . ' Ziel-Visualisierung(en) vorhanden. Registrierte Mobilgeräte sind für die Zustellung erforderlich.' : 'Push: keine Kachel-/WebFront-Visualisierung vorhanden. Die Meldungsliste benötigt Push nicht.'],
-            ['type' => 'Label', 'caption' => 'Das separate Modul Benachrichtigung ist für direkten Push-Versand nicht erforderlich.']
-        ];
-        foreach (json_decode($this->GetBuffer('AvailabilityInfo') ?: '[]', true) as $warning) {
-            $info[] = ['type' => 'Label', 'caption' => $warning];
-        }
-        foreach ($form['elements'] as &$element) {
-            if (($element['caption'] ?? '') === 'Einstellungen') {
-                foreach ($element['items'] as &$panel) {
-                    if (($panel['name'] ?? '') === 'OptionalFeatures') {
-                        $panel['items'] = $info;
                     }
                 }
                 unset($panel);
