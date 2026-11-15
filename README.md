@@ -1,4 +1,4 @@
-# Visu-Messages · 0.26
+# Visu-Messages · 0.27
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -166,3 +166,9 @@ Zusätzliche Wiederholungen: 0–100; 0 = einmalige Durchsage, 2 = insgesamt dre
 Löschen oder Entfernen durch das Meldungslimit verwirft offene Ausgaben dieser Meldung. Anpinnen ändert die Wiederholung nicht. Ein Rückwechsel der Quellvariable beendet die feste Wiederholungsanzahl nicht. Speichern der Konfiguration und Neustarten verwerfen die Warteschlange; alte Meldungen werden nicht nachträglich abgespielt. Laufende Audiodateien werden durch Löschen nicht gestoppt. Bei nicht verfügbarer Durchsage-Instanz oder Fehler wird die verbleibende Ausgabe dieser Meldung abgebrochen und eine Warnung protokolliert. Die visuelle Meldung bleibt erhalten.
 
 Bestehende Regeln sind standardmäßig ohne Durchsage. Tests und Testmeldungen starten keine Durchsage.
+
+## Durchsage-Lautstärke und Symbole (0.27)
+
+Pro Melderegel gibt es „Eigene Lautstärke“ mit 1–100 Prozent. Ohne Aktivierung bleibt die Vorgabe der Durchsage-Instanz maßgeblich. Da `DS_Play` keinen Lautstärkeparameter anbietet, wird `SonosVolume` bzw. `MediaPlayerVolume` für den Aufruf temporär gesetzt, angewendet und im finally-Block auf den vorherigen Wert zurückgesetzt. Ungespeicherte Änderungen der Zielinstanz verhindern diesen temporären Eingriff. Visu-Messages-Aufrufe auf dieselbe Durchsage-Instanz werden durch eine gemeinsame Sperre serialisiert; externe Aufrufe anderer Module nutzen diese Sperre nicht. Das Wiederherstellen der Modulkonfiguration ist keine Zusage, die tatsächliche MediaPlayer-Lautstärke nach dem Audio zurückzustellen (dies steuert das Durchsage-Modul).
+
+Neue Meldungen speichern die konfigurierte Durchsage mit Wiederholungsanzahl und Lautstärke im Feld `announcement`. Am Textende erscheint ein kleines Lautsprechersymbol; bei zusätzlichen Wiederholungen ein weiteres Wiederholungssymbol. Tooltips enthalten Lautstärke und Wiederholungsdetails. Die Symbole zeigen die beim Erstellen hinterlegte Konfiguration, keine Bestätigung erfolgreicher Wiedergabe oder noch ausstehender Wiederholungen. Ältere Meldungen ohne diese Angaben bleiben unverändert.
