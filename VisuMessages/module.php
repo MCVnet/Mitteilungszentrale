@@ -40,6 +40,7 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyString('MessageShadow', 'none');
         $this->RegisterAttributeString('Store', '{"next":1,"messages":[]}');
         $this->RegisterAttributeString('Token', '');
+        $this->RegisterAttributeInteger('UpdatedAt', 0);
         $this->RegisterVariableString('HTML', 'Meldungen (WebFront / IPSView)', [
             'PRESENTATION' => VARIABLE_PRESENTATION_LEGACY, 'PROFILE' => '~HTMLBox'
         ], 0);
@@ -314,7 +315,7 @@ class VisuMessages extends IPSModuleStrict
                 $request = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
                 $this->change((string) ($request['action'] ?? ''), $request['id'] ?? 0);
             }
-            echo json_encode(['messages' => $this->messagesForVisualization($this->store()), 'appearance' => $this->appearance()], JSON_THROW_ON_ERROR);
+            echo json_encode(['messages' => $this->messagesForVisualization($this->store()), 'appearance' => $this->appearance(), 'updatedAt' => $this->ReadAttributeInteger('UpdatedAt')], JSON_THROW_ON_ERROR);
         } catch (Throwable $e) {
             http_response_code(400);
             echo json_encode(['error' => $e->getMessage()]);
@@ -324,6 +325,7 @@ class VisuMessages extends IPSModuleStrict
     private function page(array $config): string
     {
         $config['appearance'] = $this->appearance();
+        $config['updatedAt'] = $this->ReadAttributeInteger('UpdatedAt');
         $assetBase = rtrim($this->ReadPropertyString('BaseURL'), '/');
         $host = $_SERVER['HTTP_HOST'] ?? '';
         if (is_string($host) && preg_match('/^[a-z0-9.\-:\[\]]+$/i', $host)) {
@@ -516,8 +518,11 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterVariableInteger('PinnedCount', 'Meldungen angepinnt', $presentation, 30);
         $this->RegisterVariableInteger('UnpinnedCount', 'Meldungen nicht angepinnt', $presentation, 40);
         $this->RegisterVariableString('MessageData', 'Meldungsdaten (JSON)', $presentation, 50);
+        $this->RegisterVariableInteger('LastUpdate', 'Letzte Aktualisierung', [
+            'PRESENTATION' => VARIABLE_PRESENTATION_LEGACY, 'PROFILE' => '~UnixTimestamp'
+        ], 60);
         $hidden = !$this->ReadPropertyBoolean('ShowModuleData');
-        foreach (['URL', 'MessageCount', 'PinnedCount', 'UnpinnedCount', 'MessageData'] as $ident) {
+        foreach (['URL', 'MessageCount', 'PinnedCount', 'UnpinnedCount', 'MessageData', 'LastUpdate'] as $ident) {
             IPS_SetHidden($this->GetIDForIdent($ident), $hidden);
         }
     }
@@ -539,6 +544,7 @@ class VisuMessages extends IPSModuleStrict
     private function save(array $store): void
     {
         $this->WriteAttributeString('Store', json_encode($store, JSON_THROW_ON_ERROR));
+        $this->WriteAttributeInteger('UpdatedAt', time());
         $this->publish($store);
     }
 
@@ -547,12 +553,14 @@ class VisuMessages extends IPSModuleStrict
         $messages = $this->messagesForVisualization($store);
         $total = count($messages);
         $pinned = count(array_filter($messages, static fn(array $message): bool => (bool) ($message['pinned'] ?? false)));
+        $updatedAt = $this->ReadAttributeInteger('UpdatedAt');
+        $this->SetValue('LastUpdate', $updatedAt);
         $this->SetValue('MessageCount', $total);
         $this->SetValue('PinnedCount', $pinned);
         $this->SetValue('UnpinnedCount', $total - $pinned);
-        $this->SetValue('MessageData', json_encode(['version' => 1, 'total' => $total, 'pinned' => $pinned,
+        $this->SetValue('MessageData', json_encode(['version' => 1, 'updatedAt' => $updatedAt, 'total' => $total, 'pinned' => $pinned,
             'unpinned' => $total - $pinned, 'messages' => $messages], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
-        $this->UpdateVisualizationValue(json_encode(['messages' => $messages, 'appearance' => $this->appearance()], JSON_THROW_ON_ERROR));
+        $this->UpdateVisualizationValue(json_encode(['messages' => $messages, 'appearance' => $this->appearance(), 'updatedAt' => $this->ReadAttributeInteger('UpdatedAt')], JSON_THROW_ON_ERROR));
     }
 
     private function locked(callable $callback): void
