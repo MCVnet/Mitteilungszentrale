@@ -1,4 +1,4 @@
-# Visu-Messages · 0.32
+# Visu-Messages · 0.33
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -208,3 +208,11 @@ Unter Optionale Funktionen · Verfügbarkeit wird angezeigt, ob Durchsage-Instan
 ## Push-Symbol und Einstellungsreihenfolge (0.32)
 
 Die Farbbereiche stehen in der Reihenfolge Kachelvisu, WebFront, IPSView. Neue Meldungen speichern die Push-Konfiguration im Feld `push` und zeigen bei aktivierter Push-Option ein Glockensymbol am Textende. Der Tooltip enthält Wiederholungsanzahl und Abstand. Wie das Durchsagesymbol zeigt die Glocke eine hinterlegte Konfiguration, keine Zustellbestätigung. Ältere Meldungen ohne Push-Metadaten bleiben unverändert.
+
+## Prioritäten und Sortierung (0.33)
+
+Jede Melderegel hat Priorität 1 (hohes Gewicht, rotes Variablensymbol), 2 (mittel, gelb) oder 3 (normal, bisherige Symbolfarbe). Standard ist 3; bestehende Regeln erhalten ebenfalls 3. Neue Meldungen speichern ihre Priorität. Bereits gespeicherte Meldungen ohne Priorität gelten als 3. Eine Regeländerung schreibt alte Meldungen nicht um.
+
+Oben lässt sich zwischen Priorität (Standard) und Datum wechseln. Angepinnte Meldungen stehen immer zuerst und sind untereinander nach Datum sortiert. Bei Priorität folgen danach 1, 2, 3, innerhalb jeder Stufe neueste zuerst. Bei Datum gilt neueste zuerst ohne Prioritätsgruppen. Die Auswahl wird, soweit der Client lokalen Speicher unterstützt, pro Instanz und Ansichtsart gemerkt. JSON-Ausgaben sind standardmäßig nach Priorität sortiert.
+
+Die neuen Farben betreffen das linke Variablensymbol, nicht Durchsage-/Push-Symbole. Individuelles CSS kann `--priority-1-color` und `--priority-2-color` überschreiben. Das Speicherlimit entfernt weiterhin die ältesten normalen Meldungen unabhängig von der Anzeigesortierung.
