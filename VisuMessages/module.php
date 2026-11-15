@@ -78,7 +78,7 @@ class VisuMessages extends IPSModuleStrict
                 if (!is_array($rule)) {
                     continue;
                 }
-                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50, 'PushEnabled' => false, 'PushVisuID' => 0, 'PushTitle' => 'Visu-Messages', 'PushTargetID' => 0, 'PushRepeats' => 0, 'PushInterval' => 60] as $field => $default) {
+                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50, 'PushEnabled' => false, 'PushVisuID' => 0, 'PushTitle' => 'Visu-Messages', 'PushTargetID' => 0, 'PushRepeats' => 0, 'PushInterval' => 60, 'Priority' => 3] as $field => $default) {
                     if (!array_key_exists($field, $rule)) {
                         $rule[$field] = $default;
                         $changed = true;
@@ -198,6 +198,10 @@ class VisuMessages extends IPSModuleStrict
             if (!in_array($op, $allowed, true) || trim($rule['Text'] ?? '') === '') {
                 throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Operator oder Nachrichtentext ungültig.');
             }
+            $rule['Priority'] = (int) ($rule['Priority'] ?? 3);
+            if (!in_array($rule['Priority'], [1, 2, 3], true)) {
+                throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Priorität muss 1, 2 oder 3 sein.');
+            }
             $rule['VariableID'] = $id;
             $rule['Operator'] = $op;
             $rule['Target'] = VisuMessagesRules::target((string) ($rule['Value'] ?? ''), $type);
@@ -284,7 +288,7 @@ class VisuMessages extends IPSModuleStrict
                 $messageID = $store['next']++;
                 $this->debug('Meldung erstellt', ['id' => $messageID, 'variable' => $SenderID, 'durchsage' => $rule['Announce'] && $rule['AnnouncementAvailable'], 'push' => $rule['PushEnabled'] && $rule['PushAvailable']]);
                 array_unshift($store['messages'], [
-                    'id' => $messageID, 'time' => time(), 'text' => $text,
+                    'id' => $messageID, 'time' => time(), 'text' => $text, 'priority' => $rule['Priority'],
                     'source' => IPS_GetName($SenderID), 'variableID' => $SenderID, 'pinned' => false,
                     'announcement' => ['enabled' => $rule['Announce'], 'repeats' => $rule['AnnouncementRepeats'],
                         'interval' => $rule['AnnouncementInterval'],
@@ -604,6 +608,7 @@ class VisuMessages extends IPSModuleStrict
 
     private function page(array $config): string
     {
+        $config['instanceID'] = $this->InstanceID;
         $config['appearance'] = $this->appearance();
         $config['updatedAt'] = $this->ReadAttributeInteger('UpdatedAt');
         $assetBase = rtrim($this->ReadPropertyString('BaseURL'), '/');
