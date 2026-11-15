@@ -475,104 +475,625 @@
         },
         {
           "type": "ExpansionPanel",
-          "caption": "Darstellung",
+          "caption": "Darstellung je Visualisierung",
           "expanded": false,
           "items": [
             {
-              "type": "ExpansionPanel",
-              "caption": "Überschrift",
-              "expanded": false,
-              "items": [
+              "type": "Select",
+              "name": "AppearanceEditor",
+              "caption": "Darstellung bearbeiten für",
+              "width": "350px",
+              "options": [
                 {
-                  "type": "CheckBox",
-                  "name": "ShowHeading",
-                  "caption": "Überschrift anzeigen"
+                  "caption": "Gemeinsame Vorgabe",
+                  "value": "common"
                 },
                 {
-                  "type": "ValidationTextBox",
-                  "name": "HeadingTitle",
-                  "caption": "Text der Überschrift",
-                  "width": "100%"
+                  "caption": "Kachelvisu",
+                  "value": "tile"
                 },
                 {
-                  "type": "Label",
-                  "caption": "Gilt für alle drei Visualisierungen. Eintragszahl und Löschbutton bleiben beim Ausblenden erhalten."
+                  "caption": "WebFront",
+                  "value": "webfront"
+                },
+                {
+                  "caption": "IPSView",
+                  "value": "ipsview"
                 }
-              ]
+              ],
+              "onChange": "VMMSG_UpdateAppearanceEditor($id, $AppearanceEditor);"
             },
             {
               "type": "ExpansionPanel",
-              "caption": "Kartenformat",
+              "name": "Appearance_common",
+              "caption": "Gemeinsame Vorgabe",
               "expanded": true,
               "items": [
                 {
-                  "type": "RowLayout",
+                  "type": "ExpansionPanel",
+                  "caption": "Überschrift",
+                  "expanded": false,
                   "items": [
                     {
-                      "type": "Select",
-                      "name": "MessageSize",
-                      "caption": "Kartenbreite",
-                      "options": [
-                        {
-                          "caption": "Mini · bis 320 px",
-                          "value": "mini"
-                        },
-                        {
-                          "caption": "Kompakt · bis 480 px",
-                          "value": "compact"
-                        },
-                        {
-                          "caption": "Normal · bis 760 px",
-                          "value": "normal"
-                        },
-                        {
-                          "caption": "Groß · bis 1100 px",
-                          "value": "large"
-                        },
-                        {
-                          "caption": "Benutzerdefiniert",
-                          "value": "custom"
-                        }
-                      ],
-                      "width": "270px"
+                      "type": "CheckBox",
+                      "name": "ShowHeading",
+                      "caption": "Überschrift anzeigen"
                     },
                     {
-                      "type": "NumberSpinner",
-                      "name": "MessageMinHeight",
-                      "caption": "Kartenhöhe (px, 0 = automatisch)",
-                      "minimum": 0,
-                      "maximum": 2000,
-                      "width": "270px"
+                      "type": "ValidationTextBox",
+                      "name": "HeadingTitle",
+                      "caption": "Text der Überschrift",
+                      "width": "100%"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Gilt für alle drei Visualisierungen. Eintragszahl und Löschbutton bleiben beim Ausblenden erhalten."
                     }
                   ]
                 },
                 {
                   "type": "ExpansionPanel",
-                  "caption": "Benutzerdefinierte Breite",
+                  "caption": "Kartenformat",
+                  "expanded": true,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "Select",
+                          "name": "MessageSize",
+                          "caption": "Kartenbreite",
+                          "options": [
+                            {
+                              "caption": "Mini · bis 320 px",
+                              "value": "mini"
+                            },
+                            {
+                              "caption": "Kompakt · bis 480 px",
+                              "value": "compact"
+                            },
+                            {
+                              "caption": "Normal · bis 760 px",
+                              "value": "normal"
+                            },
+                            {
+                              "caption": "Groß · bis 1100 px",
+                              "value": "large"
+                            },
+                            {
+                              "caption": "Benutzerdefiniert",
+                              "value": "custom"
+                            }
+                          ],
+                          "width": "270px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "MessageMinHeight",
+                          "caption": "Kartenhöhe (px, 0 = automatisch)",
+                          "minimum": 0,
+                          "maximum": 2000,
+                          "width": "270px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ExpansionPanel",
+                      "caption": "Benutzerdefinierte Breite",
+                      "expanded": false,
+                      "items": [
+                        {
+                          "type": "Label",
+                          "caption": "Diese Werte gelten nur bei Kartenbreite „Benutzerdefiniert“."
+                        },
+                        {
+                          "type": "RowLayout",
+                          "items": [
+                            {
+                              "type": "NumberSpinner",
+                              "name": "MessageMinWidth",
+                              "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            },
+                            {
+                              "type": "NumberSpinner",
+                              "name": "MessageMaxWidth",
+                              "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Schrift und Symbole",
                   "expanded": false,
                   "items": [
                     {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "MessageFontSize",
+                          "caption": "Meldungstext (px)",
+                          "minimum": 10,
+                          "maximum": 30,
+                          "width": "240px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "MessageMetaFontSize",
+                          "caption": "Zeit und Quelle (px)",
+                          "minimum": 9,
+                          "maximum": 20,
+                          "width": "240px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "UseVariableIcons",
+                      "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+                    },
+                    {
+                      "type": "NumberSpinner",
+                      "name": "IconSize",
+                      "caption": "Symbolgröße (Pixel)",
+                      "minimum": 24,
+                      "maximum": 96,
+                      "width": "180px"
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "MessageScaleContents",
+                      "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
+                    },
+                    {
                       "type": "Label",
-                      "caption": "Diese Werte gelten nur bei Kartenbreite „Benutzerdefiniert“."
+                      "caption": "Mini passt sich der tatsächlichen Kartenbreite an. Text antippen, um die Meldung vollständig aufzuklappen."
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Meldungsbox · Rahmen und Schatten",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "MessageBorderColor",
+                          "caption": "Rahmenfarbe",
+                          "allowTransparent": false,
+                          "width": "260px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "MessageBorderWidth",
+                          "caption": "Rahmenstärke (Pixel)",
+                          "minimum": 0,
+                          "maximum": 12,
+                          "width": "200px"
+                        }
+                      ]
                     },
                     {
                       "type": "RowLayout",
                       "items": [
                         {
                           "type": "NumberSpinner",
-                          "name": "MessageMinWidth",
-                          "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
-                          "minimum": 120,
-                          "maximum": 3000,
-                          "width": "220px"
+                          "name": "MessageRadius",
+                          "caption": "Eckenradius (Pixel)",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "width": "200px"
+                        },
+                        {
+                          "type": "Select",
+                          "name": "MessageShadow",
+                          "caption": "Schatten",
+                          "width": "260px",
+                          "options": [
+                            {
+                              "caption": "Kein Schatten",
+                              "value": "none"
+                            },
+                            {
+                              "caption": "Dezent",
+                              "value": "soft"
+                            },
+                            {
+                              "caption": "Mittel",
+                              "value": "medium"
+                            },
+                            {
+                              "caption": "Kräftig",
+                              "value": "strong"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Farben · Gemeinsame Vorgabe",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "Label",
+                      "caption": "Gilt für alle Visualisierungen, solange dort keine eigenen Farben aktiviert sind."
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "CustomColors",
+                      "caption": "Eigene Vorgabefarben verwenden (sonst automatisch hell/dunkel)"
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "BackgroundColor",
+                          "caption": "Ansicht",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "MessageColor",
+                          "caption": "Meldung",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "TextColor",
+                          "caption": "Schrift",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "AccentColor",
+                          "caption": "Akzent / Symbole",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "HTML-Box",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "NumberSpinner",
+                      "name": "Height",
+                      "caption": "HTML-Box: Höhe (Pixel)",
+                      "minimum": 200,
+                      "maximum": 2000,
+                      "width": "220px"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "ExpansionPanel",
+              "name": "Appearance_tile",
+              "caption": "Kachelvisu",
+              "expanded": true,
+              "items": [
+                {
+                  "type": "CheckBox",
+                  "name": "TileOwnLayout",
+                  "caption": "Eigene Darstellung für Kachelvisu verwenden"
+                },
+                {
+                  "type": "Label",
+                  "caption": "Ausgeschaltet: gemeinsame Vorgabe für Format, Schrift, Symbole, Überschrift und Rahmen. Eigene Farben und CSS werden unabhängig davon unten eingestellt."
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Überschrift",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "CheckBox",
+                      "name": "TileShowHeading",
+                      "caption": "Überschrift anzeigen"
+                    },
+                    {
+                      "type": "ValidationTextBox",
+                      "name": "TileHeadingTitle",
+                      "caption": "Text der Überschrift",
+                      "width": "100%"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Gilt für alle drei Visualisierungen. Eintragszahl und Löschbutton bleiben beim Ausblenden erhalten."
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Kartenformat",
+                  "expanded": true,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "Select",
+                          "name": "TileMessageSize",
+                          "caption": "Kartenbreite",
+                          "options": [
+                            {
+                              "caption": "Mini · bis 320 px",
+                              "value": "mini"
+                            },
+                            {
+                              "caption": "Kompakt · bis 480 px",
+                              "value": "compact"
+                            },
+                            {
+                              "caption": "Normal · bis 760 px",
+                              "value": "normal"
+                            },
+                            {
+                              "caption": "Groß · bis 1100 px",
+                              "value": "large"
+                            },
+                            {
+                              "caption": "Benutzerdefiniert",
+                              "value": "custom"
+                            }
+                          ],
+                          "width": "270px"
                         },
                         {
                           "type": "NumberSpinner",
-                          "name": "MessageMaxWidth",
-                          "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
-                          "minimum": 120,
-                          "maximum": 3000,
-                          "width": "220px"
+                          "name": "TileMessageMinHeight",
+                          "caption": "Kartenhöhe (px, 0 = automatisch)",
+                          "minimum": 0,
+                          "maximum": 2000,
+                          "width": "270px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ExpansionPanel",
+                      "caption": "Benutzerdefinierte Breite",
+                      "expanded": false,
+                      "items": [
+                        {
+                          "type": "Label",
+                          "caption": "Diese Werte gelten nur bei Kartenbreite „Benutzerdefiniert“."
+                        },
+                        {
+                          "type": "RowLayout",
+                          "items": [
+                            {
+                              "type": "NumberSpinner",
+                              "name": "TileMessageMinWidth",
+                              "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            },
+                            {
+                              "type": "NumberSpinner",
+                              "name": "TileMessageMaxWidth",
+                              "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Schrift und Symbole",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "TileMessageFontSize",
+                          "caption": "Meldungstext (px)",
+                          "minimum": 10,
+                          "maximum": 30,
+                          "width": "240px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "TileMessageMetaFontSize",
+                          "caption": "Zeit und Quelle (px)",
+                          "minimum": 9,
+                          "maximum": 20,
+                          "width": "240px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "TileUseVariableIcons",
+                      "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+                    },
+                    {
+                      "type": "NumberSpinner",
+                      "name": "TileIconSize",
+                      "caption": "Symbolgröße (Pixel)",
+                      "minimum": 24,
+                      "maximum": 96,
+                      "width": "180px"
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "TileMessageScaleContents",
+                      "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Mini passt sich der tatsächlichen Kartenbreite an. Text antippen, um die Meldung vollständig aufzuklappen."
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Meldungsbox · Rahmen und Schatten",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "TileMessageBorderColor",
+                          "caption": "Rahmenfarbe",
+                          "allowTransparent": false,
+                          "width": "260px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "TileMessageBorderWidth",
+                          "caption": "Rahmenstärke (Pixel)",
+                          "minimum": 0,
+                          "maximum": 12,
+                          "width": "200px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "TileMessageRadius",
+                          "caption": "Eckenradius (Pixel)",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "width": "200px"
+                        },
+                        {
+                          "type": "Select",
+                          "name": "TileMessageShadow",
+                          "caption": "Schatten",
+                          "width": "260px",
+                          "options": [
+                            {
+                              "caption": "Kein Schatten",
+                              "value": "none"
+                            },
+                            {
+                              "caption": "Dezent",
+                              "value": "soft"
+                            },
+                            {
+                              "caption": "Mittel",
+                              "value": "medium"
+                            },
+                            {
+                              "caption": "Kräftig",
+                              "value": "strong"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Farben · Kachelvisu",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "CheckBox",
+                      "name": "TileOwnColors",
+                      "caption": "Eigene Farben verwenden"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "TileBackgroundColor",
+                          "caption": "Ansicht",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "TileMessageColor",
+                          "caption": "Meldung",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "TileTextColor",
+                          "caption": "Schrift",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "TileAccentColor",
+                          "caption": "Akzent / Symbole",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ExpansionPanel",
+                      "caption": "Erweitert · CSS",
+                      "expanded": false,
+                      "items": [
+                        {
+                          "type": "ValidationTextBox",
+                          "name": "TileCSS",
+                          "caption": "Eigenes CSS",
+                          "multiline": true,
+                          "width": "100%"
+                        },
+                        {
+                          "type": "Label",
+                          "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
                         }
                       ]
                     }
@@ -582,111 +1103,302 @@
             },
             {
               "type": "ExpansionPanel",
-              "caption": "Schrift und Symbole",
-              "expanded": false,
+              "name": "Appearance_webfront",
+              "caption": "WebFront",
+              "expanded": true,
               "items": [
                 {
-                  "type": "RowLayout",
-                  "items": [
-                    {
-                      "type": "NumberSpinner",
-                      "name": "MessageFontSize",
-                      "caption": "Meldungstext (px)",
-                      "minimum": 10,
-                      "maximum": 30,
-                      "width": "240px"
-                    },
-                    {
-                      "type": "NumberSpinner",
-                      "name": "MessageMetaFontSize",
-                      "caption": "Zeit und Quelle (px)",
-                      "minimum": 9,
-                      "maximum": 20,
-                      "width": "240px"
-                    }
-                  ]
-                },
-                {
                   "type": "CheckBox",
-                  "name": "UseVariableIcons",
-                  "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
-                },
-                {
-                  "type": "NumberSpinner",
-                  "name": "IconSize",
-                  "caption": "Symbolgröße (Pixel)",
-                  "minimum": 24,
-                  "maximum": 96,
-                  "width": "180px"
-                },
-                {
-                  "type": "CheckBox",
-                  "name": "MessageScaleContents",
-                  "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
+                  "name": "WebFrontOwnLayout",
+                  "caption": "Eigene Darstellung für WebFront verwenden"
                 },
                 {
                   "type": "Label",
-                  "caption": "Mini passt sich der tatsächlichen Kartenbreite an. Text antippen, um die Meldung vollständig aufzuklappen."
-                }
-              ]
-            },
-            {
-              "type": "ExpansionPanel",
-              "caption": "Meldungsbox · Rahmen und Schatten",
-              "expanded": false,
-              "items": [
+                  "caption": "Ausgeschaltet: gemeinsame Vorgabe für Format, Schrift, Symbole, Überschrift und Rahmen. Eigene Farben und CSS werden unabhängig davon unten eingestellt."
+                },
                 {
-                  "type": "RowLayout",
+                  "type": "ExpansionPanel",
+                  "caption": "Überschrift",
+                  "expanded": false,
                   "items": [
                     {
-                      "type": "SelectColor",
-                      "name": "MessageBorderColor",
-                      "caption": "Rahmenfarbe",
-                      "allowTransparent": false,
-                      "width": "260px"
+                      "type": "CheckBox",
+                      "name": "WebFrontShowHeading",
+                      "caption": "Überschrift anzeigen"
                     },
                     {
-                      "type": "NumberSpinner",
-                      "name": "MessageBorderWidth",
-                      "caption": "Rahmenstärke (Pixel)",
-                      "minimum": 0,
-                      "maximum": 12,
-                      "width": "200px"
+                      "type": "ValidationTextBox",
+                      "name": "WebFrontHeadingTitle",
+                      "caption": "Text der Überschrift",
+                      "width": "100%"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Gilt für alle drei Visualisierungen. Eintragszahl und Löschbutton bleiben beim Ausblenden erhalten."
                     }
                   ]
                 },
                 {
-                  "type": "RowLayout",
+                  "type": "ExpansionPanel",
+                  "caption": "Kartenformat",
+                  "expanded": true,
                   "items": [
                     {
-                      "type": "NumberSpinner",
-                      "name": "MessageRadius",
-                      "caption": "Eckenradius (Pixel)",
-                      "minimum": 0,
-                      "maximum": 100,
-                      "width": "200px"
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "Select",
+                          "name": "WebFrontMessageSize",
+                          "caption": "Kartenbreite",
+                          "options": [
+                            {
+                              "caption": "Mini · bis 320 px",
+                              "value": "mini"
+                            },
+                            {
+                              "caption": "Kompakt · bis 480 px",
+                              "value": "compact"
+                            },
+                            {
+                              "caption": "Normal · bis 760 px",
+                              "value": "normal"
+                            },
+                            {
+                              "caption": "Groß · bis 1100 px",
+                              "value": "large"
+                            },
+                            {
+                              "caption": "Benutzerdefiniert",
+                              "value": "custom"
+                            }
+                          ],
+                          "width": "270px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "WebFrontMessageMinHeight",
+                          "caption": "Kartenhöhe (px, 0 = automatisch)",
+                          "minimum": 0,
+                          "maximum": 2000,
+                          "width": "270px"
+                        }
+                      ]
                     },
                     {
-                      "type": "Select",
-                      "name": "MessageShadow",
-                      "caption": "Schatten",
-                      "width": "260px",
-                      "options": [
+                      "type": "ExpansionPanel",
+                      "caption": "Benutzerdefinierte Breite",
+                      "expanded": false,
+                      "items": [
                         {
-                          "caption": "Kein Schatten",
-                          "value": "none"
+                          "type": "Label",
+                          "caption": "Diese Werte gelten nur bei Kartenbreite „Benutzerdefiniert“."
                         },
                         {
-                          "caption": "Dezent",
-                          "value": "soft"
+                          "type": "RowLayout",
+                          "items": [
+                            {
+                              "type": "NumberSpinner",
+                              "name": "WebFrontMessageMinWidth",
+                              "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            },
+                            {
+                              "type": "NumberSpinner",
+                              "name": "WebFrontMessageMaxWidth",
+                              "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Schrift und Symbole",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "WebFrontMessageFontSize",
+                          "caption": "Meldungstext (px)",
+                          "minimum": 10,
+                          "maximum": 30,
+                          "width": "240px"
                         },
                         {
-                          "caption": "Mittel",
-                          "value": "medium"
+                          "type": "NumberSpinner",
+                          "name": "WebFrontMessageMetaFontSize",
+                          "caption": "Zeit und Quelle (px)",
+                          "minimum": 9,
+                          "maximum": 20,
+                          "width": "240px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "WebFrontUseVariableIcons",
+                      "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+                    },
+                    {
+                      "type": "NumberSpinner",
+                      "name": "WebFrontIconSize",
+                      "caption": "Symbolgröße (Pixel)",
+                      "minimum": 24,
+                      "maximum": 96,
+                      "width": "180px"
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "WebFrontMessageScaleContents",
+                      "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Mini passt sich der tatsächlichen Kartenbreite an. Text antippen, um die Meldung vollständig aufzuklappen."
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Meldungsbox · Rahmen und Schatten",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "WebFrontMessageBorderColor",
+                          "caption": "Rahmenfarbe",
+                          "allowTransparent": false,
+                          "width": "260px"
                         },
                         {
-                          "caption": "Kräftig",
-                          "value": "strong"
+                          "type": "NumberSpinner",
+                          "name": "WebFrontMessageBorderWidth",
+                          "caption": "Rahmenstärke (Pixel)",
+                          "minimum": 0,
+                          "maximum": 12,
+                          "width": "200px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "WebFrontMessageRadius",
+                          "caption": "Eckenradius (Pixel)",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "width": "200px"
+                        },
+                        {
+                          "type": "Select",
+                          "name": "WebFrontMessageShadow",
+                          "caption": "Schatten",
+                          "width": "260px",
+                          "options": [
+                            {
+                              "caption": "Kein Schatten",
+                              "value": "none"
+                            },
+                            {
+                              "caption": "Dezent",
+                              "value": "soft"
+                            },
+                            {
+                              "caption": "Mittel",
+                              "value": "medium"
+                            },
+                            {
+                              "caption": "Kräftig",
+                              "value": "strong"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "ExpansionPanel",
+                  "caption": "Farben · WebFront",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "CheckBox",
+                      "name": "WebFrontOwnColors",
+                      "caption": "Eigene Farben verwenden"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "WebFrontBackgroundColor",
+                          "caption": "Ansicht",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "WebFrontMessageColor",
+                          "caption": "Meldung",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "WebFrontTextColor",
+                          "caption": "Schrift",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "WebFrontAccentColor",
+                          "caption": "Akzent / Symbole",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ExpansionPanel",
+                      "caption": "Erweitert · CSS",
+                      "expanded": false,
+                      "items": [
+                        {
+                          "type": "ValidationTextBox",
+                          "name": "WebFrontCSS",
+                          "caption": "Eigenes CSS",
+                          "multiline": true,
+                          "width": "100%"
+                        },
+                        {
+                          "type": "Label",
+                          "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
                         }
                       ]
                     }
@@ -696,286 +1408,306 @@
             },
             {
               "type": "ExpansionPanel",
-              "caption": "HTML-Box",
-              "expanded": false,
+              "name": "Appearance_ipsview",
+              "caption": "IPSView",
+              "expanded": true,
               "items": [
                 {
-                  "type": "NumberSpinner",
-                  "name": "Height",
-                  "caption": "HTML-Box: Höhe (Pixel)",
-                  "minimum": 200,
-                  "maximum": 2000,
-                  "width": "220px"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "ExpansionPanel",
-          "caption": "Farben · Gemeinsame Vorgabe",
-          "expanded": false,
-          "items": [
-            {
-              "type": "Label",
-              "caption": "Gilt für alle Visualisierungen, solange dort keine eigenen Farben aktiviert sind."
-            },
-            {
-              "type": "CheckBox",
-              "name": "CustomColors",
-              "caption": "Eigene Vorgabefarben verwenden (sonst automatisch hell/dunkel)"
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "BackgroundColor",
-                  "caption": "Ansicht",
-                  "allowTransparent": false,
-                  "width": "300px"
-                },
-                {
-                  "type": "SelectColor",
-                  "name": "MessageColor",
-                  "caption": "Meldung",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "TextColor",
-                  "caption": "Schrift",
-                  "allowTransparent": false,
-                  "width": "300px"
-                },
-                {
-                  "type": "SelectColor",
-                  "name": "AccentColor",
-                  "caption": "Akzent / Symbole",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "ExpansionPanel",
-          "caption": "Farben · Kachelvisu",
-          "expanded": false,
-          "items": [
-            {
-              "type": "CheckBox",
-              "name": "TileOwnColors",
-              "caption": "Eigene Farben verwenden"
-            },
-            {
-              "type": "Label",
-              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "TileBackgroundColor",
-                  "caption": "Ansicht",
-                  "allowTransparent": false,
-                  "width": "300px"
-                },
-                {
-                  "type": "SelectColor",
-                  "name": "TileMessageColor",
-                  "caption": "Meldung",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "TileTextColor",
-                  "caption": "Schrift",
-                  "allowTransparent": false,
-                  "width": "300px"
-                },
-                {
-                  "type": "SelectColor",
-                  "name": "TileAccentColor",
-                  "caption": "Akzent / Symbole",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "ExpansionPanel",
-              "caption": "Erweitert · CSS",
-              "expanded": false,
-              "items": [
-                {
-                  "type": "ValidationTextBox",
-                  "name": "TileCSS",
-                  "caption": "Eigenes CSS",
-                  "multiline": true,
-                  "width": "100%"
+                  "type": "CheckBox",
+                  "name": "IPSViewOwnLayout",
+                  "caption": "Eigene Darstellung für IPSView verwenden"
                 },
                 {
                   "type": "Label",
-                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "ExpansionPanel",
-          "caption": "Farben · WebFront",
-          "expanded": false,
-          "items": [
-            {
-              "type": "CheckBox",
-              "name": "WebFrontOwnColors",
-              "caption": "Eigene Farben verwenden"
-            },
-            {
-              "type": "Label",
-              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "WebFrontBackgroundColor",
-                  "caption": "Ansicht",
-                  "allowTransparent": false,
-                  "width": "300px"
+                  "caption": "Ausgeschaltet: gemeinsame Vorgabe für Format, Schrift, Symbole, Überschrift und Rahmen. Eigene Farben und CSS werden unabhängig davon unten eingestellt."
                 },
                 {
-                  "type": "SelectColor",
-                  "name": "WebFrontMessageColor",
-                  "caption": "Meldung",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "WebFrontTextColor",
-                  "caption": "Schrift",
-                  "allowTransparent": false,
-                  "width": "300px"
+                  "type": "ExpansionPanel",
+                  "caption": "Überschrift",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "CheckBox",
+                      "name": "IPSViewShowHeading",
+                      "caption": "Überschrift anzeigen"
+                    },
+                    {
+                      "type": "ValidationTextBox",
+                      "name": "IPSViewHeadingTitle",
+                      "caption": "Text der Überschrift",
+                      "width": "100%"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Gilt für alle drei Visualisierungen. Eintragszahl und Löschbutton bleiben beim Ausblenden erhalten."
+                    }
+                  ]
                 },
                 {
-                  "type": "SelectColor",
-                  "name": "WebFrontAccentColor",
-                  "caption": "Akzent / Symbole",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "ExpansionPanel",
-              "caption": "Erweitert · CSS",
-              "expanded": false,
-              "items": [
-                {
-                  "type": "ValidationTextBox",
-                  "name": "WebFrontCSS",
-                  "caption": "Eigenes CSS",
-                  "multiline": true,
-                  "width": "100%"
+                  "type": "ExpansionPanel",
+                  "caption": "Kartenformat",
+                  "expanded": true,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "Select",
+                          "name": "IPSViewMessageSize",
+                          "caption": "Kartenbreite",
+                          "options": [
+                            {
+                              "caption": "Mini · bis 320 px",
+                              "value": "mini"
+                            },
+                            {
+                              "caption": "Kompakt · bis 480 px",
+                              "value": "compact"
+                            },
+                            {
+                              "caption": "Normal · bis 760 px",
+                              "value": "normal"
+                            },
+                            {
+                              "caption": "Groß · bis 1100 px",
+                              "value": "large"
+                            },
+                            {
+                              "caption": "Benutzerdefiniert",
+                              "value": "custom"
+                            }
+                          ],
+                          "width": "270px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "IPSViewMessageMinHeight",
+                          "caption": "Kartenhöhe (px, 0 = automatisch)",
+                          "minimum": 0,
+                          "maximum": 2000,
+                          "width": "270px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ExpansionPanel",
+                      "caption": "Benutzerdefinierte Breite",
+                      "expanded": false,
+                      "items": [
+                        {
+                          "type": "Label",
+                          "caption": "Diese Werte gelten nur bei Kartenbreite „Benutzerdefiniert“."
+                        },
+                        {
+                          "type": "RowLayout",
+                          "items": [
+                            {
+                              "type": "NumberSpinner",
+                              "name": "IPSViewMessageMinWidth",
+                              "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            },
+                            {
+                              "type": "NumberSpinner",
+                              "name": "IPSViewMessageMaxWidth",
+                              "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
+                              "minimum": 120,
+                              "maximum": 3000,
+                              "width": "220px"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
-                  "type": "Label",
-                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "ExpansionPanel",
-          "caption": "Farben · IPSView",
-          "expanded": false,
-          "items": [
-            {
-              "type": "CheckBox",
-              "name": "IPSViewOwnColors",
-              "caption": "Eigene Farben verwenden"
-            },
-            {
-              "type": "Label",
-              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "IPSViewBackgroundColor",
-                  "caption": "Ansicht",
-                  "allowTransparent": false,
-                  "width": "300px"
+                  "type": "ExpansionPanel",
+                  "caption": "Schrift und Symbole",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "IPSViewMessageFontSize",
+                          "caption": "Meldungstext (px)",
+                          "minimum": 10,
+                          "maximum": 30,
+                          "width": "240px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "IPSViewMessageMetaFontSize",
+                          "caption": "Zeit und Quelle (px)",
+                          "minimum": 9,
+                          "maximum": 20,
+                          "width": "240px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "IPSViewUseVariableIcons",
+                      "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+                    },
+                    {
+                      "type": "NumberSpinner",
+                      "name": "IPSViewIconSize",
+                      "caption": "Symbolgröße (Pixel)",
+                      "minimum": 24,
+                      "maximum": 96,
+                      "width": "180px"
+                    },
+                    {
+                      "type": "CheckBox",
+                      "name": "IPSViewMessageScaleContents",
+                      "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Mini passt sich der tatsächlichen Kartenbreite an. Text antippen, um die Meldung vollständig aufzuklappen."
+                    }
+                  ]
                 },
                 {
-                  "type": "SelectColor",
-                  "name": "IPSViewMessageColor",
-                  "caption": "Meldung",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "IPSViewTextColor",
-                  "caption": "Schrift",
-                  "allowTransparent": false,
-                  "width": "300px"
+                  "type": "ExpansionPanel",
+                  "caption": "Meldungsbox · Rahmen und Schatten",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "IPSViewMessageBorderColor",
+                          "caption": "Rahmenfarbe",
+                          "allowTransparent": false,
+                          "width": "260px"
+                        },
+                        {
+                          "type": "NumberSpinner",
+                          "name": "IPSViewMessageBorderWidth",
+                          "caption": "Rahmenstärke (Pixel)",
+                          "minimum": 0,
+                          "maximum": 12,
+                          "width": "200px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "NumberSpinner",
+                          "name": "IPSViewMessageRadius",
+                          "caption": "Eckenradius (Pixel)",
+                          "minimum": 0,
+                          "maximum": 100,
+                          "width": "200px"
+                        },
+                        {
+                          "type": "Select",
+                          "name": "IPSViewMessageShadow",
+                          "caption": "Schatten",
+                          "width": "260px",
+                          "options": [
+                            {
+                              "caption": "Kein Schatten",
+                              "value": "none"
+                            },
+                            {
+                              "caption": "Dezent",
+                              "value": "soft"
+                            },
+                            {
+                              "caption": "Mittel",
+                              "value": "medium"
+                            },
+                            {
+                              "caption": "Kräftig",
+                              "value": "strong"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
                 },
                 {
-                  "type": "SelectColor",
-                  "name": "IPSViewAccentColor",
-                  "caption": "Akzent / Symbole",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "ExpansionPanel",
-              "caption": "Erweitert · CSS",
-              "expanded": false,
-              "items": [
-                {
-                  "type": "ValidationTextBox",
-                  "name": "IPSViewCSS",
-                  "caption": "Eigenes CSS",
-                  "multiline": true,
-                  "width": "100%"
-                },
-                {
-                  "type": "Label",
-                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+                  "type": "ExpansionPanel",
+                  "caption": "Farben · IPSView",
+                  "expanded": false,
+                  "items": [
+                    {
+                      "type": "CheckBox",
+                      "name": "IPSViewOwnColors",
+                      "caption": "Eigene Farben verwenden"
+                    },
+                    {
+                      "type": "Label",
+                      "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "IPSViewBackgroundColor",
+                          "caption": "Ansicht",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "IPSViewMessageColor",
+                          "caption": "Meldung",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "RowLayout",
+                      "items": [
+                        {
+                          "type": "SelectColor",
+                          "name": "IPSViewTextColor",
+                          "caption": "Schrift",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        },
+                        {
+                          "type": "SelectColor",
+                          "name": "IPSViewAccentColor",
+                          "caption": "Akzent / Symbole",
+                          "allowTransparent": false,
+                          "width": "300px"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ExpansionPanel",
+                      "caption": "Erweitert · CSS",
+                      "expanded": false,
+                      "items": [
+                        {
+                          "type": "ValidationTextBox",
+                          "name": "IPSViewCSS",
+                          "caption": "Eigenes CSS",
+                          "multiline": true,
+                          "width": "100%"
+                        },
+                        {
+                          "type": "Label",
+                          "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+                        }
+                      ]
+                    }
+                  ]
                 }
               ]
             }
