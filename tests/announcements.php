@@ -4,8 +4,10 @@ const VARIABLE_PRESENTATION_LEGACY='legacy'; const VARIABLE_PRESENTATION_VALUE_P
 const IPS_KERNELMESSAGE=1;const VM_UPDATE=2;const VM_DELETE=3;const KR_READY=10103;const KL_WARNING=102;
 $GLOBALS['calls']=[];$GLOBALS['semaphores']=[];$GLOBALS['fail']=false;$GLOBALS['reenter']=false;
 function IPS_SetHidden($id,$hidden){}
-function IPS_SetProperty($id,$name,$value){$GLOBALS['m']->p[$name]=$value;}
-function IPS_ApplyChanges($id){$GLOBALS['m']->ApplyChanges();}
+function IPS_SetProperty($id,$name,$value){if($id===20){$GLOBALS['deviceProps'][$name]=$value;}else{$GLOBALS['m']->p[$name]=$value;}}
+function IPS_GetProperty($id,$name){return $GLOBALS['deviceProps'][$name];}
+function IPS_HasChanges($id){return $GLOBALS['pendingDeviceChanges']??false;}
+function IPS_ApplyChanges($id){if($id!==20)$GLOBALS['m']->ApplyChanges();}
 function IPS_GetKernelRunlevel(){return KR_READY;}
 function IPS_VariableExists($id){return $id===10;}
 function IPS_GetParent($id){return 100;}
@@ -15,7 +17,7 @@ function IPS_InstanceExists($id){return $id===20;}
 function IPS_GetInstance($id){return ['ModuleInfo'=>['ModuleID'=>'{26F752F0-4D4E-A52C-DB3C-35DFEA979F44}'],'InstanceStatus'=>102];}
 function IPS_SemaphoreEnter($key,$timeout){if($GLOBALS['semaphores'][$key]??false)return false;$GLOBALS['semaphores'][$key]=true;return true;}
 function IPS_SemaphoreLeave($key){$GLOBALS['semaphores'][$key]=false;}
-function DS_Play($device,$text){$GLOBALS['calls'][]=[$device,$text];if(isset($GLOBALS['duringPlay']))($GLOBALS['duringPlay'])();if($GLOBALS['reenter'])$GLOBALS['m']->ProcessAnnouncements();return $GLOBALS['fail']?false:null;}
+function DS_Play($device,$text){$GLOBALS['calls'][]=[$device,$text,$GLOBALS['deviceProps']['SonosVolume']??null,$GLOBALS['deviceProps']['MediaPlayerVolume']??null];if(isset($GLOBALS['duringPlay']))($GLOBALS['duringPlay'])();if($GLOBALS['reenter'])$GLOBALS['m']->ProcessAnnouncements();return $GLOBALS['fail']?false:null;}
 class IPSModuleStrict{
  public array $p=[],$a=[],$b=[],$v=[],$timers=[],$logs=[];public int $status=0;protected int $InstanceID=1;
  public function Create():void{}public function ApplyChanges():void{}
@@ -61,3 +63,10 @@ $m=setup();trigger($m);$m->MessageSink(time(),10,VM_UPDATE,[true,true,true]);che
 $m=setup();$rules=json_decode($m->p['Rules'],true);foreach(['Announce','AnnouncementID','AnnouncementRepeats','AnnouncementInterval'] as $key)unset($rules[0][$key]);$m->p['Rules']=json_encode($rules);$m->ApplyChanges();$rules=json_decode($m->p['Rules'],true);check($rules[0]['Announce']===false&&$rules[0]['AnnouncementRepeats']===0,'legacy rules receive disabled audio defaults');
 $m=setup();trigger($m);$GLOBALS['duringPlay']=fn()=>$m->RequestAction('Delete',1);$m->ProcessAnnouncements();unset($GLOBALS['duringPlay']);check($m->a['AnnouncementQueue']==='[]','deletion during device call cannot requeue repeats');
 $m=setup();$m->p['Limit']=1;$m->ApplyChanges();trigger($m);trigger($m);check(count(json_decode($m->a['AnnouncementQueue'],true))===1,'storage limit also prunes pending audio');
+
+$GLOBALS['deviceProps']=['OutputType'=>0,'SonosVolume'=>'17','MediaPlayerVolume'=>25];
+$m=setup();$rules=json_decode($m->p['Rules'],true);$rules[0]['AnnouncementOwnVolume']=true;$rules[0]['AnnouncementVolume']=65;$m->p['Rules']=json_encode($rules);$m->ApplyChanges();trigger($m);$m->ProcessAnnouncements();$last=end($GLOBALS['calls']);check($last[2]==='65'&&$GLOBALS['deviceProps']['SonosVolume']==='17','Sonos volume applied to call and original setting restored');
+$data=json_decode($m->v['MessageData'],true);check($data['messages'][0]['announcement']['volume']===65&&$data['messages'][0]['announcement']['repeats']===2,'saved message includes volume and repeat metadata');
+$GLOBALS['fail']=true;due($m);$m->ProcessAnnouncements();$GLOBALS['fail']=false;check($GLOBALS['deviceProps']['SonosVolume']==='17','volume restored on playback failure');
+$GLOBALS['deviceProps']['OutputType']=1;$m=setup();$rules=json_decode($m->p['Rules'],true);$rules[0]['AnnouncementOwnVolume']=true;$rules[0]['AnnouncementVolume']=40;$m->p['Rules']=json_encode($rules);$m->ApplyChanges();trigger($m);$m->ProcessAnnouncements();$last=end($GLOBALS['calls']);check($last[3]===40&&$GLOBALS['deviceProps']['MediaPlayerVolume']===25,'MediaPlayer volume applied and module setting restored');
+$m=setup();$rules=json_decode($m->p['Rules'],true);$rules[0]['AnnouncementOwnVolume']=true;$rules[0]['AnnouncementVolume']=0;$m->p['Rules']=json_encode($rules);$m->ApplyChanges();check($m->status===200,'unsupported zero volume rejected instead of meaning no change on Sonos');
