@@ -288,6 +288,12 @@
           "expanded": false,
           "items": [
             {
+              "type": "Label",
+              "name": "AnnouncementAvailabilityHint",
+              "caption": "Das Modul Durchsage ist nicht installiert. Diese Option ist deshalb deaktiviert.",
+              "visible": false
+            },
+            {
               "type": "CheckBox",
               "caption": "Diese Meldung als Durchsage abspielen",
               "name": "Announce"
@@ -340,6 +346,12 @@
           "caption": "Push-Benachrichtigung",
           "expanded": false,
           "items": [
+            {
+              "type": "Label",
+              "name": "PushAvailabilityHint",
+              "caption": "Es ist keine Kachel- oder WebFront-Visualisierung für Push eingerichtet. Diese Option ist deshalb deaktiviert. Ein separates Benachrichtigungsmodul ist nicht erforderlich.",
+              "visible": false
+            },
             {
               "type": "CheckBox",
               "name": "PushEnabled",
@@ -465,13 +477,6 @@
               "caption": "Ausgaben sind im Debug-Fenster dieser Instanz sichtbar: Meldungserstellung, Visu-Aktionen und Push-/Durchsage-Aufrufe. Meldungstexte und Zugriffsschlüssel werden nicht als Diagnoseinhalt ausgegeben. Fehlerwarnungen im Symcon-Protokoll bleiben auch ohne Debug aktiv."
             }
           ]
-        },
-        {
-          "type": "ExpansionPanel",
-          "name": "OptionalFeatures",
-          "caption": "Optionale Funktionen · Verfügbarkeit",
-          "expanded": false,
-          "items": []
         },
         {
           "type": "ExpansionPanel",
