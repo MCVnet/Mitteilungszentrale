@@ -17,6 +17,17 @@ article{display:grid;grid-template-columns:var(--icon-size,48px) minmax(0,1fr);c
 .message-content{min-width:0}.actions{flex-wrap:wrap}
 @media(max-width:400px){article{grid-template-columns:min(var(--icon-size,48px),48px) minmax(0,1fr);column-gap:10px;padding:12px}.message-icon{width:min(var(--icon-size,48px),48px);height:min(var(--icon-size,48px),48px)}.message-icon svg,.message-icon img{width:min(var(--icon-size,48px),48px);height:min(var(--icon-size,48px),48px)}}
 </style>
+
+<style>
+article{--s:var(--message-scale,1);--card-icon-size:calc(var(--icon-size,48px)*var(--s));grid-template-columns:var(--card-icon-size) minmax(0,1fr);column-gap:calc(14px*var(--s));padding:calc(15px*var(--s));border:var(--message-border-width,1px) solid var(--message-border-color,var(--line));border-radius:var(--message-radius,12px);box-shadow:var(--message-shadow,none);margin-bottom:var(--message-gap,10px)}
+article.pinned{border-left-width:max(var(--message-border-width,1px),4px);border-left-color:var(--accent)}
+article .message-icon,article .message-icon svg,article .message-icon img{width:var(--card-icon-size);height:var(--card-icon-size)}
+article .meta{font-size:calc(12px*var(--s));margin-bottom:calc(7px*var(--s))}
+article .message{font-size:calc(16px*var(--s))}
+article .badge{margin-right:calc(8px*var(--s))}
+article .actions{gap:calc(8px*var(--s));margin-top:calc(12px*var(--s))}
+article button{font-size:calc(15px*var(--s));padding:calc(9px*var(--s)) calc(12px*var(--s));min-height:calc(42px*var(--s));border-radius:calc(9px*var(--s))}
+</style>
 </head>
 <body><main>
 <header><h1>Meldungen</h1><span id="count" class="count"></span><button id="clear" type="button">Nicht angepinnte löschen</button></header>
@@ -27,7 +38,7 @@ article{display:grid;grid-template-columns:var(--icon-size,48px) minmax(0,1fr);c
 </div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
-<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.21</div>
+<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.22</div>
 </main>
 <script>
 'use strict';
@@ -53,6 +64,7 @@ function colorProfile(appearance){
   return window.parent===window?'ipsview':'tile';
 }
 let customStyle=null;
+let layoutStyle=null;
 function applyAppearance(appearance){
   if(!appearance)return;
   const root=document.documentElement;
@@ -81,6 +93,14 @@ function applyAppearance(appearance){
   root.style.setProperty('--message-max-width',max+'px');
   const height=Math.max(0,Math.min(2000,Number(appearance.minHeight)||0));
   root.style.setProperty('--message-height',height?height+'px':'auto');
+  const card=appearance.cardStyle||{};
+  const scale=height&&card.scaleContents!==false?Math.max(.6,Math.min(2,height/132)):1;
+  const shadows={none:'none',soft:'0 3px 12px rgba(0,0,0,.18)',medium:'0 6px 20px rgba(0,0,0,.28)',strong:'0 10px 30px rgba(0,0,0,.4)'};
+  const border=/^#[0-9a-f]{6}$/i.test(card.borderColor||'')?card.borderColor:'var(--line)';
+  const width=Math.max(0,Math.min(12,Number.isFinite(card.borderWidth)?card.borderWidth:1));
+  const radius=Math.max(0,Math.min(100,Number.isFinite(card.radius)?card.radius:12));
+  if(!layoutStyle){layoutStyle=document.createElement('style');layoutStyle.id='visu-layout-defaults';document.head.insertBefore(layoutStyle,customStyle);}
+  layoutStyle.textContent=':root{--message-scale:'+scale+';--message-border-color:'+border+';--message-border-width:'+width+'px;--message-radius:'+radius+'px;--message-shadow:'+(shadows[card.shadow]||'none')+';}';
   document.querySelector('main').style.maxWidth=Math.max(1000,max+36)+'px';
 }
 function envelope(){
