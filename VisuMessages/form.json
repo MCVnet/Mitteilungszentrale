@@ -118,7 +118,7 @@
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Darstellung: Symbole, Farben und Breite",
+      "caption": "Darstellung · Symbole und Größe",
       "expanded": true,
       "items": [
         {
@@ -132,43 +132,6 @@
           "caption": "Symbolgröße (Pixel)",
           "minimum": 24,
           "maximum": 96
-        },
-        {
-          "type": "CheckBox",
-          "name": "EmbedSDKIcons",
-          "caption": "Symbole direkt einbetten (für IPSView empfohlen)"
-        },
-        {
-          "type": "NumberSpinner",
-          "name": "LocalWebPort",
-          "caption": "Lokaler Symcon-Webserverport für eingebettete Symbole",
-          "minimum": 1,
-          "maximum": 65535
-        },
-        {
-          "type": "CheckBox",
-          "name": "CustomColors",
-          "caption": "Gemeinsame eigene Farben verwenden (sonst automatisch hell/dunkel)"
-        },
-        {
-          "type": "SelectColor",
-          "name": "BackgroundColor",
-          "caption": "Hintergrundfarbe der Ansicht"
-        },
-        {
-          "type": "SelectColor",
-          "name": "MessageColor",
-          "caption": "Hintergrundfarbe der Meldungen"
-        },
-        {
-          "type": "SelectColor",
-          "name": "TextColor",
-          "caption": "Schriftfarbe"
-        },
-        {
-          "type": "SelectColor",
-          "name": "AccentColor",
-          "caption": "Akzentfarbe (Symbole und „Angepinnt“)"
         },
         {
           "type": "Select",
@@ -210,140 +173,295 @@
           "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
           "minimum": 120,
           "maximum": 3000
-        },
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Farben · Gemeinsame Vorgabe",
+      "expanded": false,
+      "items": [
         {
           "type": "Label",
-          "caption": "Breite und Symbolgröße gelten für alle Ansichten. Farben und CSS können je Visu eingestellt werden. Bestehende gemeinsame Farben bleiben erhalten."
+          "caption": "Gilt für alle Visualisierungen, solange dort keine eigenen Farben aktiviert sind."
         },
         {
-          "type": "ExpansionPanel",
-          "caption": "Farben und CSS: WebFront",
+          "type": "CheckBox",
+          "name": "CustomColors",
+          "caption": "Eigene Vorgabefarben verwenden (sonst automatisch hell/dunkel)"
+        },
+        {
+          "type": "RowLayout",
           "items": [
             {
-              "type": "CheckBox",
-              "name": "WebFrontOwnColors",
-              "caption": "Eigene Farben für WebFront verwenden (sonst gemeinsame Vorgabe)"
+              "type": "SelectColor",
+              "name": "BackgroundColor",
+              "caption": "Ansicht",
+              "allowTransparent": false,
+              "width": "300px"
             },
             {
               "type": "SelectColor",
+              "name": "MessageColor",
+              "caption": "Meldung",
+              "allowTransparent": false,
+              "width": "300px"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "SelectColor",
+              "name": "TextColor",
+              "caption": "Schrift",
+              "allowTransparent": false,
+              "width": "300px"
+            },
+            {
+              "type": "SelectColor",
+              "name": "AccentColor",
+              "caption": "Akzent / Symbole",
+              "allowTransparent": false,
+              "width": "300px"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Farben · WebFront",
+      "expanded": false,
+      "items": [
+        {
+          "type": "CheckBox",
+          "name": "WebFrontOwnColors",
+          "caption": "Eigene Farben verwenden"
+        },
+        {
+          "type": "Label",
+          "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "SelectColor",
               "name": "WebFrontBackgroundColor",
-              "caption": "Hintergrundfarbe der Ansicht (ohne Farbe = transparent)"
+              "caption": "Ansicht",
+              "allowTransparent": false,
+              "width": "300px"
             },
             {
               "type": "SelectColor",
               "name": "WebFrontMessageColor",
-              "caption": "Hintergrundfarbe der Meldungen"
-            },
+              "caption": "Meldung",
+              "allowTransparent": false,
+              "width": "300px"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
             {
               "type": "SelectColor",
               "name": "WebFrontTextColor",
-              "caption": "Schriftfarbe"
+              "caption": "Schrift",
+              "allowTransparent": false,
+              "width": "300px"
             },
             {
               "type": "SelectColor",
               "name": "WebFrontAccentColor",
-              "caption": "Akzentfarbe (Symbole und Angepinnt)"
-            },
-            {
-              "type": "ValidationTextBox",
-              "name": "WebFrontCSS",
-              "caption": "Optionales CSS für WebFront",
-              "multiline": true,
-              "width": "100%"
-            },
-            {
-              "type": "Label",
-              "caption": "CSS-Variablen: --bg, --card, --text, --accent. Farbfelder haben Vorrang vor CSS-Variablen; für direkte CSS-Anpassungen z. B. body { background: #071526; } verwenden."
+              "caption": "Akzent / Symbole",
+              "allowTransparent": false,
+              "width": "300px"
             }
           ]
         },
         {
           "type": "ExpansionPanel",
-          "caption": "Farben und CSS: IPSView",
+          "caption": "Erweitert · CSS",
+          "expanded": false,
           "items": [
             {
-              "type": "CheckBox",
-              "name": "IPSViewOwnColors",
-              "caption": "Eigene Farben für IPSView verwenden (sonst gemeinsame Vorgabe)"
+              "type": "ValidationTextBox",
+              "name": "WebFrontCSS",
+              "caption": "Eigenes CSS",
+              "multiline": true,
+              "width": "100%"
             },
+            {
+              "type": "Label",
+              "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Farben · IPSView",
+      "expanded": false,
+      "items": [
+        {
+          "type": "CheckBox",
+          "name": "IPSViewOwnColors",
+          "caption": "Eigene Farben verwenden"
+        },
+        {
+          "type": "Label",
+          "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+        },
+        {
+          "type": "RowLayout",
+          "items": [
             {
               "type": "SelectColor",
               "name": "IPSViewBackgroundColor",
-              "caption": "Hintergrundfarbe der Ansicht (ohne Farbe = transparent)"
+              "caption": "Ansicht",
+              "allowTransparent": false,
+              "width": "300px"
             },
             {
               "type": "SelectColor",
               "name": "IPSViewMessageColor",
-              "caption": "Hintergrundfarbe der Meldungen"
-            },
+              "caption": "Meldung",
+              "allowTransparent": false,
+              "width": "300px"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
             {
               "type": "SelectColor",
               "name": "IPSViewTextColor",
-              "caption": "Schriftfarbe"
+              "caption": "Schrift",
+              "allowTransparent": false,
+              "width": "300px"
             },
             {
               "type": "SelectColor",
               "name": "IPSViewAccentColor",
-              "caption": "Akzentfarbe (Symbole und Angepinnt)"
-            },
-            {
-              "type": "ValidationTextBox",
-              "name": "IPSViewCSS",
-              "caption": "Optionales CSS für IPSView",
-              "multiline": true,
-              "width": "100%"
-            },
-            {
-              "type": "Label",
-              "caption": "CSS-Variablen: --bg, --card, --text, --accent. Farbfelder haben Vorrang vor CSS-Variablen; für direkte CSS-Anpassungen z. B. body { background: #071526; } verwenden."
-            },
-            {
-              "type": "Label",
-              "caption": "Falls Transparenz im IPSView-Client weiß erscheint, hier die passende Hintergrundfarbe der IPSView-Seite setzen."
+              "caption": "Akzent / Symbole",
+              "allowTransparent": false,
+              "width": "300px"
             }
           ]
         },
         {
           "type": "ExpansionPanel",
-          "caption": "Farben und CSS: Kachelvisu",
+          "caption": "Erweitert · CSS",
+          "expanded": false,
           "items": [
             {
-              "type": "CheckBox",
-              "name": "TileOwnColors",
-              "caption": "Eigene Farben für Kachelvisu verwenden (sonst gemeinsame Vorgabe)"
-            },
-            {
-              "type": "SelectColor",
-              "name": "TileBackgroundColor",
-              "caption": "Hintergrundfarbe der Ansicht (ohne Farbe = transparent)"
-            },
-            {
-              "type": "SelectColor",
-              "name": "TileMessageColor",
-              "caption": "Hintergrundfarbe der Meldungen"
-            },
-            {
-              "type": "SelectColor",
-              "name": "TileTextColor",
-              "caption": "Schriftfarbe"
-            },
-            {
-              "type": "SelectColor",
-              "name": "TileAccentColor",
-              "caption": "Akzentfarbe (Symbole und Angepinnt)"
-            },
-            {
               "type": "ValidationTextBox",
-              "name": "TileCSS",
-              "caption": "Optionales CSS für Kachelvisu",
+              "name": "IPSViewCSS",
+              "caption": "Eigenes CSS",
               "multiline": true,
               "width": "100%"
             },
             {
               "type": "Label",
-              "caption": "CSS-Variablen: --bg, --card, --text, --accent. Farbfelder haben Vorrang vor CSS-Variablen; für direkte CSS-Anpassungen z. B. body { background: #071526; } verwenden."
+              "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
             }
           ]
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Farben · Kachelvisu",
+      "expanded": false,
+      "items": [
+        {
+          "type": "CheckBox",
+          "name": "TileOwnColors",
+          "caption": "Eigene Farben verwenden"
+        },
+        {
+          "type": "Label",
+          "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "SelectColor",
+              "name": "TileBackgroundColor",
+              "caption": "Ansicht",
+              "allowTransparent": false,
+              "width": "300px"
+            },
+            {
+              "type": "SelectColor",
+              "name": "TileMessageColor",
+              "caption": "Meldung",
+              "allowTransparent": false,
+              "width": "300px"
+            }
+          ]
+        },
+        {
+          "type": "RowLayout",
+          "items": [
+            {
+              "type": "SelectColor",
+              "name": "TileTextColor",
+              "caption": "Schrift",
+              "allowTransparent": false,
+              "width": "300px"
+            },
+            {
+              "type": "SelectColor",
+              "name": "TileAccentColor",
+              "caption": "Akzent / Symbole",
+              "allowTransparent": false,
+              "width": "300px"
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Erweitert · CSS",
+          "expanded": false,
+          "items": [
+            {
+              "type": "ValidationTextBox",
+              "name": "TileCSS",
+              "caption": "Eigenes CSS",
+              "multiline": true,
+              "width": "100%"
+            },
+            {
+              "type": "Label",
+              "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Erweitert · Einbindung",
+      "expanded": false,
+      "items": [
+        {
+          "type": "CheckBox",
+          "name": "EmbedSDKIcons",
+          "caption": "Symbole direkt einbetten (für IPSView empfohlen)"
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "LocalWebPort",
+          "caption": "Lokaler Symcon-Webserverport für eingebettete Symbole",
+          "minimum": 1,
+          "maximum": 65535
         },
         {
           "type": "Select",
@@ -363,21 +481,6 @@
               "value": "tile"
             }
           ]
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Diagnose: Transparenz in IPSView",
-      "items": [
-        {
-          "type": "CheckBox",
-          "name": "TransparencyTest",
-          "caption": "Minimalen Transparenztest statt der TileHtml-Meldungsliste anzeigen"
-        },
-        {
-          "type": "Label",
-          "caption": "Nach Übernehmen die View im IPSView-Client neu laden. A soll den Seitenhintergrund zeigen; B ist absichtlich dunkelblau. Der Test betrifft auch die Kachelvisu dieser Instanz. Meldungen werden weiter gesammelt und bleiben erhalten. Danach Haken entfernen, übernehmen und View erneut laden."
         }
       ]
     }
