@@ -13,8 +13,12 @@ function IPS_VariableExists($id){return $id===10;}
 function IPS_GetParent($id){return 100;}
 function IPS_GetName($id){return $id===100?'EG | Büro links | Fenster-offen':'Value';}
 function IPS_GetVariable($id){return ['VariableType'=>0];}
-function IPS_InstanceExists($id){return $id===20;}
-function IPS_GetInstance($id){return ['ModuleInfo'=>['ModuleID'=>'{26F752F0-4D4E-A52C-DB3C-35DFEA979F44}'],'InstanceStatus'=>102];}
+function IPS_InstanceExists($id){return in_array($id,[20,30,40],true);}
+function IPS_ObjectExists($id){return in_array($id,[1,90],true);}
+function IPS_GetInstanceListByModuleID($id){return $id==='{B5B875BB-9B76-45FD-4E67-2607E45B3AC4}'?[30]:($id==='{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}'?[40]:[]);}
+function VISU_PostNotification($id,$title,$text,$type,$target){$GLOBALS['push'][]=['tile',$id,$title,$text,$target];return ($GLOBALS['pushFail']??false)?false:123;}
+function WFC_PushNotification($id,$title,$text,$type,$target){$GLOBALS['push'][]=['webfront',$id,$title,$text,$target];return true;}
+function IPS_GetInstance($id){return ['ModuleInfo'=>['ModuleID'=>[20=>'{26F752F0-4D4E-A52C-DB3C-35DFEA979F44}',30=>'{B5B875BB-9B76-45FD-4E67-2607E45B3AC4}',40=>'{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}'][$id]],'InstanceStatus'=>102];}
 function IPS_SemaphoreEnter($key,$timeout){if($GLOBALS['semaphores'][$key]??false)return false;$GLOBALS['semaphores'][$key]=true;return true;}
 function IPS_SemaphoreLeave($key){$GLOBALS['semaphores'][$key]=false;}
 function DS_Play($device,$text){$GLOBALS['calls'][]=[$device,$text,$GLOBALS['deviceProps']['SonosVolume']??null,$GLOBALS['deviceProps']['MediaPlayerVolume']??null];if(isset($GLOBALS['duringPlay']))($GLOBALS['duringPlay'])();if($GLOBALS['reenter'])$GLOBALS['m']->ProcessAnnouncements();return $GLOBALS['fail']?false:null;}
@@ -70,3 +74,14 @@ $data=json_decode($m->v['MessageData'],true);check($data['messages'][0]['announc
 $GLOBALS['fail']=true;due($m);$m->ProcessAnnouncements();$GLOBALS['fail']=false;check($GLOBALS['deviceProps']['SonosVolume']==='17','volume restored on playback failure');
 $GLOBALS['deviceProps']['OutputType']=1;$m=setup();$rules=json_decode($m->p['Rules'],true);$rules[0]['AnnouncementOwnVolume']=true;$rules[0]['AnnouncementVolume']=40;$m->p['Rules']=json_encode($rules);$m->ApplyChanges();trigger($m);$m->ProcessAnnouncements();$last=end($GLOBALS['calls']);check($last[3]===40&&$GLOBALS['deviceProps']['MediaPlayerVolume']===25,'MediaPlayer volume applied and module setting restored');
 $m=setup();$rules=json_decode($m->p['Rules'],true);$rules[0]['AnnouncementOwnVolume']=true;$rules[0]['AnnouncementVolume']=0;$m->p['Rules']=json_encode($rules);$m->ApplyChanges();check($m->status===200,'unsupported zero volume rejected instead of meaning no change on Sonos');
+
+function pushRule($m,$visu=30,$target=0){$r=json_decode($m->p['Rules'],true);$r[0]['PushEnabled']=true;$r[0]['PushVisuID']=$visu;$r[0]['PushTitle']='Fenstermeldung';$r[0]['PushTargetID']=$target;$m->p['Rules']=json_encode($r);$m->ApplyChanges();}
+$GLOBALS['push']=[];
+$m=setup(false);pushRule($m);trigger($m);check(count($GLOBALS['push'])===0,'push queued without synchronous send');$m->ProcessAnnouncements();check(count($GLOBALS['push'])===1&&$GLOBALS['push'][0][0]==='tile'&&$GLOBALS['push'][0][4]===1,'tile push uses selected visualization and module default target');check($GLOBALS['push'][0][3]==='EG | Büro links | Fenster-offen · Value: true','push contains fully resolved message text');$m->ProcessAnnouncements();check(count($GLOBALS['push'])===1,'push sent only once');
+$m=setup(false);pushRule($m,40,90);trigger($m);$m->ProcessAnnouncements();$last=end($GLOBALS['push']);check($last[0]==='webfront'&&$last[4]===90,'WebFront push supports explicit target');
+$m=setup(false);pushRule($m);trigger($m);$m->RequestAction('Delete',1);$n=count($GLOBALS['push']);$m->ProcessAnnouncements();check(count($GLOBALS['push'])===$n,'deleted message cancels queued push');
+$m=setup();pushRule($m);trigger($m);$n=count($GLOBALS['push']);$m->ProcessAnnouncements();$m->ProcessAnnouncements();due($m);$m->ProcessAnnouncements();due($m);$m->ProcessAnnouncements();check(count($GLOBALS['push'])===$n+1,'audio repetitions do not repeat push');
+$m=setup();pushRule($m);trigger($m);$GLOBALS['pushFail']=true;$m->ProcessAnnouncements();$GLOBALS['pushFail']=false;$n=count($GLOBALS['calls']);$m->ProcessAnnouncements();check(count($GLOBALS['calls'])===$n+1&&count($m->logs)===1,'push failure preserves independent announcement');
+$m=setup(false);pushRule($m);$r=json_decode($m->p['Rules'],true);$r[0]['PushTitle']=str_repeat('Ä',40);$r[0]['Text']=str_repeat('Ö',300);$m->p['Rules']=json_encode($r);$m->ApplyChanges();trigger($m);$m->ProcessAnnouncements();$last=end($GLOBALS['push']);preg_match_all('/./us',$last[2],$title);preg_match_all('/./us',$last[3],$text);check(count($title[0])===32&&count($text[0])===256,'push limits preserve Unicode characters');check(strlen(json_decode($m->v['MessageData'],true)['messages'][0]['text'])===600,'stored message retains full text');
+$m=setup(false);pushRule($m,20);check($m->status===200,'non-visualization recipient rejected');
+$m=setup(false);$form=json_decode($m->GetConfigurationForm(),true);$section=end($form['elements'][0]['form']);check(count($section['items'][1]['options'])===3,'recipient selector lists tile and WebFront instances');
