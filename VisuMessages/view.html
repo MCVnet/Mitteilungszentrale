@@ -119,18 +119,22 @@ function colorProfile(appearance){
 }
 let customStyle=null;
 let layoutStyle=null;
+let useVariableIcons=true;
 function applyAppearance(appearance){
   if(!appearance)return;
   const root=document.documentElement;
+  const profile=colorProfile(appearance);
+  root.dataset.visu=profile;
+  const selected=appearance.profiles&&appearance.profiles[profile];
+  if(selected)appearance={...appearance,...(selected.layout||{}),colors:selected.colors};
+  const nextIcons=appearance.useVariableIcons!==false;
+  const iconsChanged=nextIcons!==useVariableIcons;
+  if(iconsChanged){useVariableIcons=nextIcons;rendered='';}
   const heading=document.querySelector('header h1');
   const title=typeof appearance.heading?.title==='string'?appearance.heading.title:'Meldungen';
   heading.textContent=title;
   heading.hidden=appearance.heading?.visible===false||title.trim()==='';
   heading.parentElement.classList.toggle('no-heading',heading.hidden);
-  const profile=colorProfile(appearance);
-  root.dataset.visu=profile;
-  const selected=appearance.profiles&&appearance.profiles[profile];
-  if(selected)appearance={...appearance,colors:selected.colors};
   if(!customStyle){customStyle=document.createElement('style');customStyle.id='visu-custom-css';document.head.append(customStyle);}
   customStyle.textContent=selected&&typeof selected.css==='string'?selected.css:'';
   for(const key of ['bg','card','text','accent','muted','line'])root.style.removeProperty('--'+key);
@@ -163,6 +167,7 @@ function applyAppearance(appearance){
   if(!layoutStyle){layoutStyle=document.createElement('style');layoutStyle.id='visu-layout-defaults';document.head.insertBefore(layoutStyle,customStyle);}
   layoutStyle.textContent=':root{--message-scale:'+scale+';--message-border-color:'+border+';--message-border-width:'+width+'px;--message-radius:'+radius+'px;--message-shadow:'+(shadows[card.shadow]||'none')+';--message-font-size:'+Math.max(10,Math.min(30,Number(appearance.fontSize)||15))+'px;--message-meta-font-size:'+Math.max(9,Math.min(20,Number(appearance.metaFontSize)||11))+'px;}';
   document.querySelector('main').style.maxWidth=(max+36)+'px';
+  if(iconsChanged)render(messages);
 }
 function envelope(){
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
@@ -283,7 +288,7 @@ function render(items) {
     pin.onclick=()=>act(m.pinned?'Unpin':'Pin',m.id);
     const del=element('button','','Löschen'); del.type='button';del.dataset.key='delete-'+m.id;del.disabled=m.pinned;del.title=m.pinned?'Zum Löschen zuerst lösen':'Meldung löschen';
     del.setAttribute('aria-label','Löschen');del.onclick=()=>act('Delete',m.id);
-    actions.append(pin,del);content.append(actions);card.append(messageIcon(m.icon),content);list.append(card);fitCard(card);if(cardResize)cardResize.observe(card);
+    actions.append(pin,del);content.append(actions);card.append(messageIcon(useVariableIcons?m.icon:''),content);list.append(card);fitCard(card);if(cardResize)cardResize.observe(card);
   }
   if(focus)Array.from(list.querySelectorAll('button')).find(e=>e.dataset.key===focus)?.focus();
 }
