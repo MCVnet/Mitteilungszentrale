@@ -1,4 +1,4 @@
-# Visu-Messages · 0.17
+# Visu-Messages · 0.18
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -95,3 +95,7 @@ Transparenz und der Diagnosemodus sind vorerst entfernt. Zuvor transparente Farb
 CSS liegt eingeklappt unter „Erweitert · CSS“ im jeweiligen Visu-Bereich. Beispiel: `article { border-radius: 16px; }`. Die Farbfelder setzen CSS-Variablen inline und haben Vorrang vor gleichnamigen Variablen in einem normalen Stylesheet.
 
 Unter „Erweitert · Einbindung“ liegen Symbol-Einbettung, lokaler Webserverport und SDK-Profil. Die automatische SDK-Erkennung unterscheidet eigenständige Dokumente (IPSView) von Frames (Kachelvisu); die manuelle Übersteuerung gilt für alle SDK-Clients dieser Instanz.
+
+## Instanzaufbau (0.18)
+
+Die Melderegeln stehen zuerst, über die volle Formularbreite und mit 16 sichtbaren Zeilen. Die Variablenspalte ist 420 Pixel breit. Hinweise und Einstellungen sind eingeklappt. Unter Einstellungen liegen Speicher und Begrenzung, Darstellung, die vier Farbbereiche sowie die technische Einbindung getrennt. HTML-Höhe gehört zur Darstellung; das Meldungslimit zu Speicher und Begrenzung.
