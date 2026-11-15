@@ -33,6 +33,11 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('MessageMinWidth', 240);
         $this->RegisterPropertyInteger('MessageMaxWidth', 760);
         $this->RegisterPropertyInteger('MessageMinHeight', 0);
+        $this->RegisterPropertyBoolean('MessageScaleContents', true);
+        $this->RegisterPropertyInteger('MessageBorderColor', 0x374652);
+        $this->RegisterPropertyInteger('MessageBorderWidth', 1);
+        $this->RegisterPropertyInteger('MessageRadius', 12);
+        $this->RegisterPropertyString('MessageShadow', 'none');
         $this->RegisterAttributeString('Store', '{"next":1,"messages":[]}');
         $this->RegisterAttributeString('Token', '');
         $this->RegisterVariableString('HTML', 'Meldungen (WebFront / IPSView)', [
@@ -458,6 +463,11 @@ class VisuMessages extends IPSModuleStrict
             $profiles[$key] = ['colors' => $viewColors, 'css' => $this->ReadPropertyString($view . 'CSS')];
         }
         return ['profiles' => $profiles, 'sdkProfile' => $this->ReadPropertyString('SDKColorProfile'), 'colors' => $colors, 'minWidth'  => $min, 'maxWidth' => $max,
+            'cardStyle' => ['scaleContents' => $this->ReadPropertyBoolean('MessageScaleContents'),
+                'borderColor' => sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger('MessageBorderColor')))),
+                'borderWidth' => max(0, min(12, $this->ReadPropertyInteger('MessageBorderWidth'))),
+                'radius' => max(0, min(100, $this->ReadPropertyInteger('MessageRadius'))),
+                'shadow' => $this->ReadPropertyString('MessageShadow')],
             'minHeight' => max(0, min(2000, $this->ReadPropertyInteger('MessageMinHeight'))),
             'iconSize' => max(24, min(96, $this->ReadPropertyInteger('IconSize')))];
     }
