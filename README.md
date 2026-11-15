@@ -1,4 +1,4 @@
-# Visu-Messages · 0.25
+# Visu-Messages · 0.26
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -156,3 +156,13 @@ Die Integer-Variable `LastUpdate` („Letzte Aktualisierung“, Profil `~UnixTim
 Der Platzhalter `{parent}` liefert den Namen des direkten übergeordneten Objekts der überwachten Variable (bei Gerätevariablen üblicherweise die Instanz). Neue Regeln verwenden `{parent} · {name}: {value}`. Beispiel: `EG | Büro links | Fenster-offen · Value: true`. Bei Variablen direkt unter der Wurzel lautet der übergeordnete Name `IP-Symcon`.
 
 Bestehende Regeln mit exakt dem bisherigen Standardtext `{name}: {value}` werden beim Aktualisieren auf den neuen Standard erweitert. Individuelle Texte sowie bereits gespeicherte Meldungen bleiben unverändert.
+
+## Durchsagen pro Melderegel (0.26)
+
+Im Bearbeitungsdialog einer Regel kann unter „Durchsage und Wiederholung“ die Ausgabe aktiviert werden. Ausgewählt wird eine Instanz des offiziellen Durchsage-Moduls (`symcon/Durchsage`). Dort werden TTS, Lautsprecher und Lautstärke konfiguriert. Visu-Messages übergibt den fertig aufgelösten Nachrichtentext an `DS_Play`.
+
+Zusätzliche Wiederholungen: 0–100; 0 = einmalige Durchsage, 2 = insgesamt drei Ausgaben. Abstand: 1–86400 Sekunden ab Rückkehr des vorherigen Aufrufs. Die erste Ausgabe wird per Timer frühestens etwa eine Sekunde nach dem Ereignis gestartet. Es wird eine Ausgabe je Timerdurchlauf verarbeitet, aufeinanderfolgende Aufrufe innerhalb dieser Visu-Messages-Instanz werden serialisiert. Das Durchsage-Modul steuert die eigentliche Wiedergabe und deren Ende.
+
+Löschen oder Entfernen durch das Meldungslimit verwirft offene Ausgaben dieser Meldung. Anpinnen ändert die Wiederholung nicht. Ein Rückwechsel der Quellvariable beendet die feste Wiederholungsanzahl nicht. Speichern der Konfiguration und Neustarten verwerfen die Warteschlange; alte Meldungen werden nicht nachträglich abgespielt. Laufende Audiodateien werden durch Löschen nicht gestoppt. Bei nicht verfügbarer Durchsage-Instanz oder Fehler wird die verbleibende Ausgabe dieser Meldung abgebrochen und eine Warnung protokolliert. Die visuelle Meldung bleibt erhalten.
+
+Bestehende Regeln sind standardmäßig ohne Durchsage. Tests und Testmeldungen starten keine Durchsage.
