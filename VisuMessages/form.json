@@ -78,7 +78,7 @@
           "name": "Text",
           "caption": "Nachricht",
           "width": "auto",
-          "add": "{name}: {value}",
+          "add": "{parent} · {name}: {value}",
           "edit": {
             "type": "ValidationTextBox"
           }
@@ -97,7 +97,7 @@
         },
         {
           "type": "Label",
-          "caption": "Platzhalter: {name} Variablenname, {value} neuer Rohwert, {old} alter Rohwert, {id} Variablen-ID. Boolesche Werte: true/false. Texte: exakte Groß-/Kleinschreibung."
+          "caption": "Platzhalter: {parent} Name des übergeordneten Objekts (meist Geräteinstanz), {name} Variablenname, {value} neuer Rohwert, {old} alter Rohwert, {id} Variablen-ID. Boolean: true/false."
         }
       ]
     },
