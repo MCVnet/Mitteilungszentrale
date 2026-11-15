@@ -1,4 +1,4 @@
-# Visu-Messages · 0.27
+# Visu-Messages · 0.28
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -172,3 +172,15 @@ Bestehende Regeln sind standardmäßig ohne Durchsage. Tests und Testmeldungen s
 Pro Melderegel gibt es „Eigene Lautstärke“ mit 1–100 Prozent. Ohne Aktivierung bleibt die Vorgabe der Durchsage-Instanz maßgeblich. Da `DS_Play` keinen Lautstärkeparameter anbietet, wird `SonosVolume` bzw. `MediaPlayerVolume` für den Aufruf temporär gesetzt, angewendet und im finally-Block auf den vorherigen Wert zurückgesetzt. Ungespeicherte Änderungen der Zielinstanz verhindern diesen temporären Eingriff. Visu-Messages-Aufrufe auf dieselbe Durchsage-Instanz werden durch eine gemeinsame Sperre serialisiert; externe Aufrufe anderer Module nutzen diese Sperre nicht. Das Wiederherstellen der Modulkonfiguration ist keine Zusage, die tatsächliche MediaPlayer-Lautstärke nach dem Audio zurückzustellen (dies steuert das Durchsage-Modul).
 
 Neue Meldungen speichern die konfigurierte Durchsage mit Wiederholungsanzahl und Lautstärke im Feld `announcement`. Am Textende erscheint ein kleines Lautsprechersymbol; bei zusätzlichen Wiederholungen ein weiteres Wiederholungssymbol. Tooltips enthalten Lautstärke und Wiederholungsdetails. Die Symbole zeigen die beim Erstellen hinterlegte Konfiguration, keine Bestätigung erfolgreicher Wiedergabe oder noch ausstehender Wiederholungen. Ältere Meldungen ohne diese Angaben bleiben unverändert.
+
+## Direkte Push-Benachrichtigung (0.28)
+
+Im Bearbeitungsdialog jeder Regel gibt es „Push-Benachrichtigung“. Aktivieren, eine Kachel-Visualisierung oder einen WebFront-Konfigurator auswählen und optional Titel und Sprungziel hinterlegen. Ohne eigenes Sprungziel wird die Visu-Messages-Instanz geöffnet; sie muss in der ausgewählten Visu erreichbar sein. Gesendet wird einmalig der fertig aufgelöste Meldungstext. Durchsage und Push sind unabhängig einschaltbar.
+
+Der Versand verwendet direkt `VISU_PostNotification` bzw. `WFC_PushNotification`, ohne das mehrstufige Benachrichtigungsmodul zu verändern oder eine Kette zu starten. Titel werden auf 32, Nachrichtentexte auf 256 Unicode-Zeichen begrenzt. Die Liste speichert weiterhin den vollständigen Text. Die Ziel-Visu muss registrierte Mobilgeräte besitzen; die üblichen Symcon-Push-Voraussetzungen gelten. IPSView ist über diese beiden APIs kein eigenes Push-Ziel.
+
+Die Zustellung erfolgt über dieselbe interne Warteschlange wie Durchsagen; bei Kombination wird Push zuerst eingeplant. Pro Ereignis wird genau ein Versand versucht. Fehler werden protokolliert, ohne die Meldung oder deren Durchsage zu entfernen. Löschen der Meldung vor dem Versand, Speichern der Konfiguration oder Neustart verwirft offene Ausgaben. Keine Push-Nachricht durch reine Testmeldungen.
+
+Durchsage- und Wiederholungssymbole sind auf 1,35 em vergrößert und skalieren mit der Meldungsschrift.
+
+API-Dokumentation: https://www.symcon.de/de/service/dokumentation/modulreferenz/visualisierungen/kachel-visualisierung/visu-postnotification/
