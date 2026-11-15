@@ -148,7 +148,7 @@
         {
           "type": "CheckBox",
           "name": "CustomColors",
-          "caption": "Eigene Farben verwenden (sonst automatisch hell/dunkel)"
+          "caption": "Gemeinsame eigene Farben verwenden (sonst automatisch hell/dunkel)"
         },
         {
           "type": "SelectColor",
@@ -213,7 +213,156 @@
         },
         {
           "type": "Label",
-          "caption": "Farben und Breite gelten für alle Ansichten dieser Instanz. Mindest-/Maximalbreite gelten bei Benutzerdefiniert. Auf schmalen Displays wird die verfügbare Breite genutzt. Neue Symbole werden auch für bestehende Meldungen übernommen."
+          "caption": "Breite und Symbolgröße gelten für alle Ansichten. Farben und CSS können je Visu eingestellt werden. Bestehende gemeinsame Farben bleiben erhalten."
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Farben und CSS: WebFront",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "WebFrontOwnColors",
+              "caption": "Eigene Farben für WebFront verwenden (sonst gemeinsame Vorgabe)"
+            },
+            {
+              "type": "SelectColor",
+              "name": "WebFrontBackgroundColor",
+              "caption": "Hintergrundfarbe der Ansicht (ohne Farbe = transparent)"
+            },
+            {
+              "type": "SelectColor",
+              "name": "WebFrontMessageColor",
+              "caption": "Hintergrundfarbe der Meldungen"
+            },
+            {
+              "type": "SelectColor",
+              "name": "WebFrontTextColor",
+              "caption": "Schriftfarbe"
+            },
+            {
+              "type": "SelectColor",
+              "name": "WebFrontAccentColor",
+              "caption": "Akzentfarbe (Symbole und Angepinnt)"
+            },
+            {
+              "type": "ValidationTextBox",
+              "name": "WebFrontCSS",
+              "caption": "Optionales CSS für WebFront",
+              "multiline": true,
+              "width": "100%"
+            },
+            {
+              "type": "Label",
+              "caption": "CSS-Variablen: --bg, --card, --text, --accent. Farbfelder haben Vorrang vor CSS-Variablen; für direkte CSS-Anpassungen z. B. body { background: #071526; } verwenden."
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Farben und CSS: IPSView",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "IPSViewOwnColors",
+              "caption": "Eigene Farben für IPSView verwenden (sonst gemeinsame Vorgabe)"
+            },
+            {
+              "type": "SelectColor",
+              "name": "IPSViewBackgroundColor",
+              "caption": "Hintergrundfarbe der Ansicht (ohne Farbe = transparent)"
+            },
+            {
+              "type": "SelectColor",
+              "name": "IPSViewMessageColor",
+              "caption": "Hintergrundfarbe der Meldungen"
+            },
+            {
+              "type": "SelectColor",
+              "name": "IPSViewTextColor",
+              "caption": "Schriftfarbe"
+            },
+            {
+              "type": "SelectColor",
+              "name": "IPSViewAccentColor",
+              "caption": "Akzentfarbe (Symbole und Angepinnt)"
+            },
+            {
+              "type": "ValidationTextBox",
+              "name": "IPSViewCSS",
+              "caption": "Optionales CSS für IPSView",
+              "multiline": true,
+              "width": "100%"
+            },
+            {
+              "type": "Label",
+              "caption": "CSS-Variablen: --bg, --card, --text, --accent. Farbfelder haben Vorrang vor CSS-Variablen; für direkte CSS-Anpassungen z. B. body { background: #071526; } verwenden."
+            },
+            {
+              "type": "Label",
+              "caption": "Falls Transparenz im IPSView-Client weiß erscheint, hier die passende Hintergrundfarbe der IPSView-Seite setzen."
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Farben und CSS: Kachelvisu",
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "TileOwnColors",
+              "caption": "Eigene Farben für Kachelvisu verwenden (sonst gemeinsame Vorgabe)"
+            },
+            {
+              "type": "SelectColor",
+              "name": "TileBackgroundColor",
+              "caption": "Hintergrundfarbe der Ansicht (ohne Farbe = transparent)"
+            },
+            {
+              "type": "SelectColor",
+              "name": "TileMessageColor",
+              "caption": "Hintergrundfarbe der Meldungen"
+            },
+            {
+              "type": "SelectColor",
+              "name": "TileTextColor",
+              "caption": "Schriftfarbe"
+            },
+            {
+              "type": "SelectColor",
+              "name": "TileAccentColor",
+              "caption": "Akzentfarbe (Symbole und Angepinnt)"
+            },
+            {
+              "type": "ValidationTextBox",
+              "name": "TileCSS",
+              "caption": "Optionales CSS für Kachelvisu",
+              "multiline": true,
+              "width": "100%"
+            },
+            {
+              "type": "Label",
+              "caption": "CSS-Variablen: --bg, --card, --text, --accent. Farbfelder haben Vorrang vor CSS-Variablen; für direkte CSS-Anpassungen z. B. body { background: #071526; } verwenden."
+            }
+          ]
+        },
+        {
+          "type": "Select",
+          "name": "SDKColorProfile",
+          "caption": "Profil für TileHtml / HTML-SDK",
+          "options": [
+            {
+              "caption": "Automatisch: eigenständige Ansicht = IPSView, iframe = Kachelvisu",
+              "value": "auto"
+            },
+            {
+              "caption": "Immer IPSView (Sonderfall / anderer Client)",
+              "value": "ipsview"
+            },
+            {
+              "caption": "Immer Kachelvisu (Sonderfall / anderer Client)",
+              "value": "tile"
+            }
+          ]
         }
       ]
     }
