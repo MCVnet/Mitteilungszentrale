@@ -411,14 +411,52 @@
             {
               "type": "Label",
               "caption": "Die JSON-Daten sind eine Ausgabe zur Weiterverwendung. Änderungen daran ändern nicht die gespeicherten Meldungen. Die WebView-Adresse enthält den Zugriffsschlüssel."
+            },
+            {
+              "type": "CheckBox",
+              "name": "DebugEnabled",
+              "caption": "Erweiterte Debug-Ausgaben aktivieren"
+            },
+            {
+              "type": "Label",
+              "caption": "Ausgaben sind im Debug-Fenster dieser Instanz sichtbar: Meldungserstellung, Visu-Aktionen und Push-/Durchsage-Aufrufe. Meldungstexte und Zugriffsschlüssel werden nicht als Diagnoseinhalt ausgegeben. Fehlerwarnungen im Symcon-Protokoll bleiben auch ohne Debug aktiv."
             }
           ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "name": "OptionalFeatures",
+          "caption": "Optionale Funktionen · Verfügbarkeit",
+          "expanded": false,
+          "items": []
         },
         {
           "type": "ExpansionPanel",
           "caption": "Darstellung",
           "expanded": false,
           "items": [
+            {
+              "type": "ExpansionPanel",
+              "caption": "Überschrift",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "CheckBox",
+                  "name": "ShowHeading",
+                  "caption": "Überschrift anzeigen"
+                },
+                {
+                  "type": "ValidationTextBox",
+                  "name": "HeadingTitle",
+                  "caption": "Text der Überschrift",
+                  "width": "100%"
+                },
+                {
+                  "type": "Label",
+                  "caption": "Gilt für alle drei Visualisierungen. Eintragszahl und Löschbutton bleiben beim Ausblenden erhalten."
+                }
+              ]
+            },
             {
               "type": "ExpansionPanel",
               "caption": "Kartenformat",
