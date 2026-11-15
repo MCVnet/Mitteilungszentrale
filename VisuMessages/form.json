@@ -82,9 +82,133 @@
           "edit": {
             "type": "ValidationTextBox"
           }
+        },
+        {
+          "name": "Announce",
+          "caption": "Durchsage",
+          "visible": false,
+          "save": true,
+          "add": false
+        },
+        {
+          "name": "AnnouncementID",
+          "caption": "Durchsage-Gerät",
+          "visible": false,
+          "save": true,
+          "add": 0
+        },
+        {
+          "name": "AnnouncementRepeats",
+          "caption": "Wiederholungen",
+          "visible": false,
+          "save": true,
+          "add": 0
+        },
+        {
+          "name": "AnnouncementInterval",
+          "caption": "Abstand (Sekunden)",
+          "visible": false,
+          "save": true,
+          "add": 60
         }
       ],
-      "width": "100%"
+      "width": "100%",
+      "form": [
+        {
+          "type": "CheckBox",
+          "name": "Enabled",
+          "caption": "Aktiv"
+        },
+        {
+          "type": "SelectVariable",
+          "name": "VariableID",
+          "caption": "Variable",
+          "width": "100%"
+        },
+        {
+          "type": "Select",
+          "options": [
+            {
+              "caption": "gleich",
+              "value": "eq"
+            },
+            {
+              "caption": "ungleich",
+              "value": "ne"
+            },
+            {
+              "caption": "kleiner",
+              "value": "lt"
+            },
+            {
+              "caption": "kleiner / gleich",
+              "value": "le"
+            },
+            {
+              "caption": "größer",
+              "value": "gt"
+            },
+            {
+              "caption": "größer / gleich",
+              "value": "ge"
+            },
+            {
+              "caption": "Text enthält",
+              "value": "contains"
+            }
+          ],
+          "name": "Operator",
+          "caption": "Bedingung"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "Value",
+          "caption": "Vergleichswert"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "Text",
+          "caption": "Nachricht",
+          "width": "100%"
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Durchsage und Wiederholung",
+          "expanded": true,
+          "items": [
+            {
+              "type": "CheckBox",
+              "caption": "Diese Meldung als Durchsage abspielen",
+              "name": "Announce"
+            },
+            {
+              "type": "SelectModule",
+              "caption": "Durchsage-Instanz / Gerät",
+              "moduleID": "{26F752F0-4D4E-A52C-DB3C-35DFEA979F44}",
+              "width": "100%",
+              "name": "AnnouncementID"
+            },
+            {
+              "type": "NumberSpinner",
+              "caption": "Zusätzliche Wiederholungen (0 = einmal abspielen)",
+              "minimum": 0,
+              "maximum": 100,
+              "name": "AnnouncementRepeats"
+            },
+            {
+              "type": "NumberSpinner",
+              "caption": "Abstand zwischen Durchsagen (Sekunden)",
+              "minimum": 1,
+              "maximum": 86400,
+              "name": "AnnouncementInterval"
+            },
+            {
+              "type": "Label",
+              "caption": "Die erste Ausgabe startet nach dem Erstellen der Meldung. Wiederholungen sind zusätzliche Ausgaben; 2 bedeutet insgesamt 3 Durchsagen. Gerät und Lautstärke werden in der gewählten Durchsage-Instanz eingerichtet. Löschen der Meldung beendet offene Wiederholungen. Speichern der Konfiguration oder ein Neustart verwirft offene Durchsagen."
+            }
+          ]
+        }
+      ]
     },
     {
       "type": "ExpansionPanel",
