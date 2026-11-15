@@ -135,6 +135,18 @@
         },
         {
           "type": "CheckBox",
+          "name": "EmbedSDKIcons",
+          "caption": "Symbole direkt einbetten (für IPSView empfohlen)"
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "LocalWebPort",
+          "caption": "Lokaler Symcon-Webserverport für eingebettete Symbole",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        {
+          "type": "CheckBox",
           "name": "CustomColors",
           "caption": "Eigene Farben verwenden (sonst automatisch hell/dunkel)"
         },
