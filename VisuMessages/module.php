@@ -13,6 +13,8 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyString('BaseURL', '');
         $this->RegisterPropertyBoolean('UseVariableIcons', true);
         $this->RegisterPropertyInteger('IconSize', 48);
+        $this->RegisterPropertyBoolean('EmbedSDKIcons', true);
+        $this->RegisterPropertyInteger('LocalWebPort', 3777);
         $this->RegisterPropertyBoolean('CustomColors', false);
         $this->RegisterPropertyInteger('BackgroundColor', 0x141c25);
         $this->RegisterPropertyInteger('MessageColor', 0x1e2a36);
@@ -292,7 +294,44 @@ class VisuMessages extends IPSModuleStrict
             $assetBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . $host;
         }
         $config['iconScriptURL'] = $assetBase . '/icons.js';
-        return str_replace('__MZ_CONFIG__', json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), file_get_contents(__DIR__ . '/view.html'));
+        $html = str_replace('__MZ_CONFIG__', json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), file_get_contents(__DIR__ . '/view.html'));
+        if (($config['mode'] ?? '') === 'sdk' && $this->ReadPropertyBoolean('EmbedSDKIcons')) {
+            $library = $this->embeddedIconLibrary();
+            if ($library !== '') {
+                // Keep one inline script: native IPSView renders HTML without loading external scripts reliably.
+                $html = str_replace("\nloadIconLibrary();", "\n" . $library . "\n;loadIconLibrary();", $html);
+            }
+        }
+        return $html;
+    }
+
+    private function embeddedIconLibrary(): string
+    {
+        $port = max(1, min(65535, $this->ReadPropertyInteger('LocalWebPort')));
+        $key = 'IconLibrary' . $port;
+        $cached = $this->GetBuffer($key);
+        if ($cached !== '') {
+            return $cached;
+        }
+        $curl = curl_init('http://127.0.0.1:' . $port . '/icons.js');
+        curl_setopt_array($curl, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 1,
+            CURLOPT_TIMEOUT => 4, CURLOPT_ENCODING => '']);
+        $library = curl_exec($curl);
+        $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $error = curl_error($curl);
+        curl_close($curl);
+        // Some installations return gzip bytes even without a Content-Encoding header.
+        if (is_string($library) && str_starts_with($library, "\x1f\x8b")) {
+            $library = gzdecode($library);
+        }
+        if ($status !== 200 || !is_string($library) || strlen($library) > 12000000 ||
+            !str_contains($library, 'FontAwesome') || !str_contains($library, 'findIconDefinition') ||
+            stripos($library, '</script') !== false) {
+            $this->SendDebug('Icon library', 'Lokaler Symbolsatz nicht erreichbar: HTTP ' . $status . ' ' . $error, 0);
+            return '';
+        }
+        $this->SetBuffer($key, $library);
+        return $library;
     }
 
     private function appearance(): array
