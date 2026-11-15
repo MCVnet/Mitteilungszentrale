@@ -32,10 +32,10 @@ article button{font-size:calc(15px*var(--s));padding:calc(9px*var(--s)) calc(12p
 <style>
 :root[data-compact="true"] article{--card-icon-size:calc(32px*var(--s));padding:calc(6px*var(--s)) calc(10px*var(--s));column-gap:calc(10px*var(--s))}
 :root[data-compact="true"] .message-content{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:calc(10px*var(--s));align-content:center;min-width:0}
-:root[data-compact="true"] article .meta{grid-column:1;grid-row:1;font-size:calc(10px*var(--s));margin-bottom:calc(2px*var(--s));line-height:1.25}
-:root[data-compact="true"] article .message{grid-column:1;grid-row:2;font-size:calc(13px*var(--s));line-height:1.3}
+:root[data-compact="true"] article .meta{grid-column:1;grid-row:1;font-size:calc(11px*var(--s));margin-bottom:calc(2px*var(--s));line-height:1.25}
+:root[data-compact="true"] article .message{grid-column:1;grid-row:2;font-size:calc(15px*var(--s));line-height:1.3}
 :root[data-compact="true"] article .actions{grid-column:2;grid-row:1 / 3;align-self:center;margin:0;gap:calc(6px*var(--s));flex-wrap:nowrap}
-:root[data-compact="true"] article button{font-size:calc(12px*var(--s));min-height:calc(32px*var(--s));padding:calc(5px*var(--s)) calc(8px*var(--s))}
+:root[data-compact="true"] article button{font-size:calc(13px*var(--s));min-height:calc(32px*var(--s));padding:calc(5px*var(--s)) calc(8px*var(--s))}
 @media(max-width:480px){
  :root[data-compact="true"] article button{font-size:0;width:calc(32px*var(--s));padding:calc(5px*var(--s))}
  :root[data-compact="true"] article button::before{font-size:calc(16px*var(--s));content:'×'}
@@ -53,7 +53,6 @@ article button{font-size:calc(15px*var(--s));padding:calc(9px*var(--s)) calc(12p
 </div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
-<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.23</div>
 </main>
 <script>
 'use strict';
@@ -118,7 +117,7 @@ function applyAppearance(appearance){
   const radius=Math.max(0,Math.min(100,Number.isFinite(card.radius)?card.radius:12));
   if(!layoutStyle){layoutStyle=document.createElement('style');layoutStyle.id='visu-layout-defaults';document.head.insertBefore(layoutStyle,customStyle);}
   layoutStyle.textContent=':root{--message-scale:'+scale+';--message-border-color:'+border+';--message-border-width:'+width+'px;--message-radius:'+radius+'px;--message-shadow:'+(shadows[card.shadow]||'none')+';}';
-  document.querySelector('main').style.maxWidth=Math.max(1000,max+36)+'px';
+  document.querySelector('main').style.maxWidth=(max+36)+'px';
 }
 function envelope(){
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
@@ -182,6 +181,10 @@ function loadIconLibrary(){
 }
 loadIconLibrary();
 applyAppearance(config.appearance);
+function updated(timestamp){
+  const seconds=Number(timestamp);
+  if(Number.isFinite(seconds)&&seconds>0)report('Letzte Aktualisierung: '+new Date(seconds*1000).toLocaleString('de-DE'),false);
+}
 function report(text, error) { status.textContent = text; status.className = error ? 'error' : ''; }
 function element(tag, className, text) { const e=document.createElement(tag); if(className)e.className=className; if(text!==undefined)e.textContent=text; return e; }
 function render(items) {
@@ -226,12 +229,12 @@ async function act(action,id=0){
       pending=setTimeout(()=>{busy=false;report('Keine Bestätigung erhalten. Ansicht aktualisieren.',true);},12000);
       requestAction(action==='Clear'?'ClearUnpinned':action,action==='Clear'?1:id);
     }else{
-      const data=await webRequest(action,id);applyAppearance(data.appearance);render(data.messages);busy=false;report('Gespeichert',false);
+      const data=await webRequest(action,id);applyAppearance(data.appearance);render(data.messages);busy=false;updated(data.updatedAt);
     }
   }catch(e){busy=false;report(e.message,true);}
 }
 function handleMessage(data){
-  try{const value=typeof data==='string'?JSON.parse(data):data;clearTimeout(pending);busy=false;if(value.error){report(value.error,true);return;}applyAppearance(value.appearance);render(value.messages);report('Aktuell',false);}catch(e){report('Aktualisierung konnte nicht gelesen werden.',true);}
+  try{const value=typeof data==='string'?JSON.parse(data):data;clearTimeout(pending);busy=false;if(value.error){report(value.error,true);return;}applyAppearance(value.appearance);render(value.messages);updated(value.updatedAt);}catch(e){report('Aktualisierung konnte nicht gelesen werden.',true);}
 }
 document.getElementById('clear').onclick=()=>{
   document.getElementById('clearConfirmation').hidden=false;
@@ -248,6 +251,7 @@ document.getElementById('confirmClear').onclick=()=>{
 };
 render(messages);
 if(config.mode==='sdk'){
+  updated(config.updatedAt);
   requestAction('Refresh',0);
 }else{
   // Schlüssel aus der sichtbaren Adresse entfernen; im Speicher für API-Aufrufe behalten.
@@ -255,7 +259,7 @@ if(config.mode==='sdk'){
   const poll=async()=>{
     if(!busy&&!document.hidden){
       busy=true;
-      try{const data=await webRequest();applyAppearance(data.appearance);render(data.messages);report('Aktuell · automatische Aktualisierung',false);}catch(e){report(e.message,true);}finally{busy=false;}
+      try{const data=await webRequest();applyAppearance(data.appearance);render(data.messages);updated(data.updatedAt);}catch(e){report(e.message,true);}finally{busy=false;}
     }
     setTimeout(poll,3000);
   };
