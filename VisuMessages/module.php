@@ -12,6 +12,7 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('Height', 480);
         $this->RegisterPropertyString('BaseURL', '');
         $this->RegisterPropertyBoolean('UseVariableIcons', true);
+        $this->RegisterPropertyInteger('IconSize', 48);
         $this->RegisterPropertyBoolean('CustomColors', false);
         $this->RegisterPropertyInteger('BackgroundColor', 0x141c25);
         $this->RegisterPropertyInteger('MessageColor', 0x1e2a36);
@@ -285,6 +286,12 @@ class VisuMessages extends IPSModuleStrict
     private function page(array $config): string
     {
         $config['appearance'] = $this->appearance();
+        $assetBase = rtrim($this->ReadPropertyString('BaseURL'), '/');
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        if (is_string($host) && preg_match('/^[a-z0-9.\-:\[\]]+$/i', $host)) {
+            $assetBase = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . $host;
+        }
+        $config['iconScriptURL'] = $assetBase . '/icons.js';
         return str_replace('__MZ_CONFIG__', json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR), file_get_contents(__DIR__ . '/view.html'));
     }
 
@@ -302,7 +309,8 @@ class VisuMessages extends IPSModuleStrict
                 $colors[$key] = sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger($property))));
             }
         }
-        return ['colors' => $colors, 'minWidth' => $min, 'maxWidth' => $max];
+        return ['colors' => $colors, 'minWidth' => $min, 'maxWidth' => $max,
+            'iconSize' => max(24, min(96, $this->ReadPropertyInteger('IconSize')))];
     }
 
     private function messagesForVisualization(array $store): array
