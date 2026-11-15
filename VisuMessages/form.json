@@ -365,6 +365,21 @@
           ]
         }
       ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Diagnose: Transparenz in IPSView",
+      "items": [
+        {
+          "type": "CheckBox",
+          "name": "TransparencyTest",
+          "caption": "Minimalen Transparenztest statt der TileHtml-Meldungsliste anzeigen"
+        },
+        {
+          "type": "Label",
+          "caption": "Nach Übernehmen die View im IPSView-Client neu laden. A soll den Seitenhintergrund zeigen; B ist absichtlich dunkelblau. Der Test betrifft auch die Kachelvisu dieser Instanz. Meldungen werden weiter gesammelt und bleiben erhalten. Danach Haken entfernen, übernehmen und View erneut laden."
+        }
+      ]
     }
   ],
   "actions": [
