@@ -13,6 +13,11 @@
 </head>
 <body><main>
 <header><h1>Meldungen</h1><span id="count" class="count"></span><button id="clear" type="button">Nicht angepinnte löschen</button></header>
+<div id="clearConfirmation" hidden role="group" aria-label="Sammellöschen bestätigen" style="margin-bottom:16px">
+<p>Alle nicht angepinnten Meldungen löschen? Angepinnte Meldungen bleiben erhalten.</p>
+<button id="confirmClear" type="button">Jetzt löschen</button>
+<button id="cancelClear" type="button">Abbrechen</button>
+</div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
 <div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten.</div>
@@ -77,7 +82,17 @@ function handleMessage(data){
   try{const value=typeof data==='string'?JSON.parse(data):data;render(value.messages);clearTimeout(pending);busy=false;report('Aktuell',false);}catch(e){report('Aktualisierung konnte nicht gelesen werden.',true);}
 }
 document.getElementById('clear').onclick=()=>{
-  if(confirm('Alle nicht angepinnten Meldungen löschen?'))act('Clear');
+  document.getElementById('clearConfirmation').hidden=false;
+  document.getElementById('confirmClear').focus();
+};
+document.getElementById('cancelClear').onclick=()=>{
+  document.getElementById('clearConfirmation').hidden=true;
+  document.getElementById('clear').focus();
+};
+document.getElementById('confirmClear').onclick=()=>{
+  if(busy){report('Bitte kurz warten und erneut bestätigen.',false);return;}
+  document.getElementById('clearConfirmation').hidden=true;
+  act('Clear');
 };
 render(messages);
 if(config.mode==='sdk'){
