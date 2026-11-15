@@ -44,10 +44,21 @@ final class VisuMessagesRules
         }));
     }
 
-    public static function sorted(array $messages): array
+    public static function sorted(array $messages, string $mode = 'priority'): array
     {
-        usort($messages, static fn(array $a, array $b): int =>
-            ((int) $b['pinned'] <=> (int) $a['pinned']) ?: ($b['id'] <=> $a['id']));
+        usort($messages, static function (array $a, array $b) use ($mode): int {
+            $pin = (int) $b['pinned'] <=> (int) $a['pinned'];
+            if ($pin !== 0) {
+                return $pin;
+            }
+            if (!$a['pinned'] && $mode === 'priority') {
+                $priority = (int) ($a['priority'] ?? 3) <=> (int) ($b['priority'] ?? 3);
+                if ($priority !== 0) {
+                    return $priority;
+                }
+            }
+            return ((int) ($b['time'] ?? 0) <=> (int) ($a['time'] ?? 0)) ?: ($b['id'] <=> $a['id']);
+        });
         return $messages;
     }
 }
