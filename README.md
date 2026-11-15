@@ -1,4 +1,4 @@
-# Visu-Messages · 0.10
+# Visu-Messages · 0.15
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -85,3 +85,11 @@ Auf deinem System prüfen: Instanz anlegen; Testmeldung; Regelübergang falsch �
 - [HTML-SDK für Kacheln](https://www.symcon.de/de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/html-sdk/)
 - [Native Hook-Registrierung](https://www.symcon.de/de/service/dokumentation/entwicklerbereich/sdk-tools/sdk-php/module/registerhook/)
 - [HTML-Box als Webinhalt](https://www.symcon.de/en/service/documentation/components/object-presentation/web-content/)
+
+## Farben je Visualisierung (ab 0.15)
+
+In der Instanz unter Darstellung gibt es eigene Abschnitte für WebFront, IPSView und Kachelvisu. „Eigene Farben“ aktivieren, um Ansicht, Meldung, Schrift und Akzent getrennt zu setzen. Ohne Aktivierung gelten die bisherigen gemeinsamen Farben. Ohne Ansichtsfarbe wird transparentes CSS ausgegeben; native Clients können darunter eine weiße Browserfläche zeigen. In IPSView dann das Blau der Seite explizit auswählen.
+
+Optionales CSS wird je Profil als eigener Stylesheet eingefügt. Beispiel: `body { background: #071526; } article { border-radius: 16px; }`. Die Farbfelder setzen CSS-Variablen inline und haben daher Vorrang vor gleichnamigen Variablen in einem normalen Stylesheet. Direkte Selektoren wie `body` oder `article` können diese Darstellung anpassen.
+
+Die SDK-Erkennung unterscheidet eigenständige HTML-Dokumente (native IPSView) von eingebetteten Frames (Kachelvisu). Bei anderen Einbindungsarten lässt sich das SDK-Profil ausdrücklich in der Instanz festlegen. Diese Übersteuerung gilt für alle SDK-Clients dieser Instanz. WebFront verwendet unabhängig davon sein eigenes Profil.
