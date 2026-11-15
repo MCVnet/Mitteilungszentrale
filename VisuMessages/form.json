@@ -127,6 +127,13 @@
           "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
         },
         {
+          "type": "NumberSpinner",
+          "name": "IconSize",
+          "caption": "Symbolgröße (Pixel)",
+          "minimum": 24,
+          "maximum": 96
+        },
+        {
           "type": "CheckBox",
           "name": "CustomColors",
           "caption": "Eigene Farben verwenden (sonst automatisch hell/dunkel)"
