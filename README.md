@@ -1,4 +1,4 @@
-# Visu-Messages · 0.34
+# Visu-Messages · 0.35
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -203,7 +203,7 @@ Unter Darstellung → Überschrift lässt sich „Meldungen“ durch einen eigen
 
 Unter Modulvariablen und Daten kann erweitertes Debug eingeschaltet werden. Die Ausgabe erfolgt im Symcon-Debug-Fenster der Instanz; der Schalter öffnet dieses Fenster nicht automatisch. Er protokolliert Meldungs-IDs, Quellvariablen und Ausgabeschritte, nicht Nachrichtentexte oder Zugriffsschlüssel. Warnungen bei Ausgabefehlern bleiben unabhängig davon aktiv.
 
-Unter Optionale Funktionen · Verfügbarkeit wird angezeigt, ob Durchsage-Instanzen und Push-Zielvisualisierungen vorhanden sind. Fehlt ein gewähltes Ziel, wird nur die betreffende optionale Ausgabe übersprungen; gültige Melderegeln erzeugen weiterhin visuelle Meldungen. Nach Einrichtung/Änderung eines Zieles Konfiguration erneut übernehmen. Das separate mehrstufige Modul Benachrichtigung ist nicht erforderlich, da Push direkt über die Visu-API gesendet wird.
+Direkt im Bearbeitungsdialog einer Melderegel wird bei fehlender optionaler Funktion ein Hinweis angezeigt und deren Eingabe ausgegraut. Fehlt ein gewähltes Ziel, wird nur die betreffende optionale Ausgabe übersprungen; gültige Melderegeln erzeugen weiterhin visuelle Meldungen. Nach Einrichtung/Änderung eines Zieles Konfiguration erneut übernehmen. Das separate mehrstufige Modul Benachrichtigung ist nicht erforderlich, da Push direkt über die Visu-API gesendet wird.
 
 ## Push-Symbol und Einstellungsreihenfolge (0.32)
 
@@ -224,3 +224,9 @@ Unter Einstellungen → Darstellung je Visualisierung wird zuerst der zu bearbei
 „Eigene Darstellung für … verwenden“ aktiviert unabhängige Kartenbreite/-höhe, Schriftgrößen, Symbolgröße/-verwendung, Inhaltsskalierung, Überschrift sowie Rahmen/Schatten. Ohne Aktivierung gelten die bisherigen gemeinsamen Werte. Beim erstmaligen Anlegen der neuen Eigenschaften werden die gemeinsamen Werte als Ausgangswerte übernommen. Bestehende Farben und CSS bleiben erhalten und werden je Ansicht separat verwaltet. Die Höhe der gesamten HTML-Box bleibt eine gemeinsame Einstellung.
 
 Beispiel: Kachelvisu wählen, eigene Darstellung aktivieren und Mini/80 px/16 px Text setzen. WebFront und IPSView behalten ihre bisherigen Werte, solange dort keine eigene Darstellung aktiviert ist. Die bestehende SDK-Profilzuordnung gilt weiterhin; eine erzwungene SDK-Auswahl überschreibt beide SDK-Clients dieser Instanz.
+
+## Hinweise direkt in der Melderegel (0.35)
+
+Der allgemeine Verfügbarkeitsbereich ist entfernt. Im Bearbeitungsdialog der Melderegel zeigt der Durchsage-Bereich bei fehlendem Modul einen Hinweis; seine Eingaben sind ausgegraut. Ist das Modul installiert, aber noch keine Instanz eingerichtet, erscheint ein entsprechender Einrichtungshinweis. Nach Installation/Einrichtung das Instanzformular erneut öffnen.
+
+Ohne Push-Zielvisualisierung wird nur die Push-Option ausgegraut und dort ein Hinweis angezeigt. Die Meldungsliste arbeitet weiterhin unabhängig von diesen optionalen Funktionen. Gespeicherte Regelwerte bleiben erhalten.
