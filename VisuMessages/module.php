@@ -60,6 +60,21 @@ class VisuMessages extends IPSModuleStrict
         $this->registerDataVariables();
         // Replace previously cleared colors with the original solid defaults once.
         $normalized = false;
+        $rules = json_decode($this->ReadPropertyString('Rules'), true);
+        if (is_array($rules) && array_is_list($rules)) {
+            $changed = false;
+            foreach ($rules as &$rule) {
+                if (is_array($rule) && ($rule['Text'] ?? '') === '{name}: {value}') {
+                    $rule['Text'] = '{parent} · {name}: {value}';
+                    $changed = true;
+                }
+            }
+            unset($rule);
+            if ($changed) {
+                IPS_SetProperty($this->InstanceID, 'Rules', json_encode($rules, JSON_THROW_ON_ERROR));
+                $normalized = true;
+            }
+        }
         foreach (['', 'WebFront', 'IPSView', 'Tile'] as $prefix) {
             foreach (['BackgroundColor' => 0x141c25, 'MessageColor' => 0x1e2a36, 'TextColor' => 0xedf3f7, 'AccentColor' => 0x7ed8b6] as $property => $default) {
                 if ($this->ReadPropertyInteger($prefix . $property) < 0) {
@@ -183,7 +198,10 @@ class VisuMessages extends IPSModuleStrict
                     continue;
                 }
                 $format = static fn(mixed $value): string => is_bool($value) ? ($value ? 'true' : 'false') : (string) $value;
+                $parentID = IPS_GetParent($SenderID);
+                $parentName = $parentID > 0 ? IPS_GetName($parentID) : 'IP-Symcon';
                 $text = strtr($rule['Text'], [
+                    '{parent}' => $parentName,
                     '{name}' => IPS_GetName($SenderID), '{value}' => $format($Data[0]),
                     '{old}' => $format($Data[2]), '{id}' => (string) $SenderID
                 ]);
