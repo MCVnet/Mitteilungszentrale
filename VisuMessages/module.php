@@ -15,6 +15,9 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('Height', 480);
         $this->RegisterPropertyString('BaseURL', '');
         $this->RegisterPropertyBoolean('ShowModuleData', false);
+        $this->RegisterPropertyBoolean('DebugEnabled', false);
+        $this->RegisterPropertyString('HeadingTitle', 'Meldungen');
+        $this->RegisterPropertyBoolean('ShowHeading', true);
         $this->RegisterPropertyBoolean('UseVariableIcons', true);
         $this->RegisterPropertyInteger('IconSize', 48);
         $this->RegisterPropertyBoolean('EmbedSDKIcons', true);
@@ -143,10 +146,10 @@ class VisuMessages extends IPSModuleStrict
                     $this->RegisterReference($id);
                     $this->RegisterMessage($id, VM_UPDATE);
                     $this->RegisterMessage($id, VM_DELETE);
-                    if ($rule['Announce']) {
+                    if ($rule['Announce'] && $rule['AnnouncementAvailable']) {
                         $this->RegisterReference($rule['AnnouncementID']);
                     }
-                    if ($rule['PushEnabled']) {
+                    if ($rule['PushEnabled'] && $rule['PushAvailable']) {
                         $this->RegisterReference($rule['PushVisuID']);
                         if ($rule['PushTargetID'] > 0) {
                             $this->RegisterReference($rule['PushTargetID']);
@@ -175,6 +178,8 @@ class VisuMessages extends IPSModuleStrict
             throw new InvalidArgumentException('Regeln müssen eine Liste sein.');
         }
         $active = [];
+        $availability = [];
+        $this->SetBuffer('AvailabilityInfo', '[]');
         foreach ($rules as $index => $rule) {
             if (!($rule['Enabled'] ?? true)) {
                 continue;
@@ -202,13 +207,15 @@ class VisuMessages extends IPSModuleStrict
             $rule['AnnouncementInterval'] = (int) ($rule['AnnouncementInterval'] ?? 60);
             $rule['AnnouncementOwnVolume'] = (bool) ($rule['AnnouncementOwnVolume'] ?? false);
             $rule['AnnouncementVolume'] = (int) ($rule['AnnouncementVolume'] ?? 50);
+            $rule['AnnouncementAvailable'] = true;
             if ($rule['Announce']) {
                 if ($rule['AnnouncementOwnVolume'] && ($rule['AnnouncementVolume'] < 1 || $rule['AnnouncementVolume'] > 100)) {
                     throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Durchsage-Lautstärke muss zwischen 1 und 100 Prozent liegen.');
                 }
                 $device = $rule['AnnouncementID'];
                 if (!IPS_InstanceExists($device) || IPS_GetInstance($device)['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
-                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': gültige Durchsage-Instanz auswählen.');
+                    $rule['AnnouncementAvailable'] = false;
+                    $availability[] = 'Regel ' . ($index + 1) . ': Durchsage-Instanz fehlt oder ist ungeeignet. Die Meldungsliste funktioniert weiterhin.';
                 }
                 if ($rule['AnnouncementRepeats'] < 0 || $rule['AnnouncementRepeats'] > 100 ||
                     $rule['AnnouncementInterval'] < 1 || $rule['AnnouncementInterval'] > 86400) {
@@ -221,20 +228,24 @@ class VisuMessages extends IPSModuleStrict
             $rule['PushTargetID'] = (int) ($rule['PushTargetID'] ?? 0);
             $rule['PushRepeats'] = (int) ($rule['PushRepeats'] ?? 0);
             $rule['PushInterval'] = (int) ($rule['PushInterval'] ?? 60);
+            $rule['PushAvailable'] = true;
             if ($rule['PushEnabled']) {
                 if ($rule['PushRepeats'] < 0 || $rule['PushRepeats'] > 100 || $rule['PushInterval'] < 1 || $rule['PushInterval'] > 86400) {
                     throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Push-Wiederholungen 0–100, Abstand 1–86400 Sekunden.');
                 }
                 if (!IPS_InstanceExists($rule['PushVisuID']) || !in_array(IPS_GetInstance($rule['PushVisuID'])['ModuleInfo']['ModuleID'], [self::TILE_MODULE, self::WEBFRONT_MODULE], true)) {
-                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': eine Kachel- oder WebFront-Visualisierung für Push auswählen.');
+                    $rule['PushAvailable'] = false;
+                    $availability[] = 'Regel ' . ($index + 1) . ': Push-Visualisierung fehlt oder ist ungeeignet. Die Meldungsliste funktioniert weiterhin.';
                 }
                 if ($rule['PushTargetID'] < 0 || ($rule['PushTargetID'] > 0 && !IPS_ObjectExists($rule['PushTargetID']))) {
-                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': ungültiges Push-Sprungziel.');
+                    $rule['PushAvailable'] = false;
+                    $availability[] = 'Regel ' . ($index + 1) . ': Push-Sprungziel fehlt. Push bleibt für diese Regel aus; die Meldungsliste funktioniert weiterhin.';
                 }
             }
             $rule['AnnouncementKey'] = hash('sha256', json_encode($rule, JSON_THROW_ON_ERROR));
             $active[] = $rule;
         }
+        $this->SetBuffer('AvailabilityInfo', json_encode($availability, JSON_THROW_ON_ERROR));
         return $active;
     }
 
@@ -271,6 +282,7 @@ class VisuMessages extends IPSModuleStrict
                     '{old}' => $format($Data[2]), '{id}' => (string) $SenderID
                 ]);
                 $messageID = $store['next']++;
+                $this->debug('Meldung erstellt', ['id' => $messageID, 'variable' => $SenderID, 'durchsage' => $rule['Announce'] && $rule['AnnouncementAvailable'], 'push' => $rule['PushEnabled'] && $rule['PushAvailable']]);
                 array_unshift($store['messages'], [
                     'id' => $messageID, 'time' => time(), 'text' => $text,
                     'source' => IPS_GetName($SenderID), 'variableID' => $SenderID, 'pinned' => false,
@@ -278,7 +290,7 @@ class VisuMessages extends IPSModuleStrict
                         'interval' => $rule['AnnouncementInterval'],
                         'volume' => $rule['AnnouncementOwnVolume'] ? $rule['AnnouncementVolume'] : null]
                 ]);
-                if ($rule['PushEnabled']) {
+                if ($rule['PushEnabled'] && $rule['PushAvailable']) {
                     $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
                     $queue[] = ['kind' => 'push', 'messageID' => $messageID, 'device' => $rule['PushVisuID'], 'text' => $text,
                         'title' => $rule['PushTitle'], 'target' => $rule['PushTargetID'] ?: $this->InstanceID,
@@ -286,7 +298,7 @@ class VisuMessages extends IPSModuleStrict
                         'generation' => $this->ReadAttributeInteger('AnnouncementGeneration')];
                     $this->writeAnnouncementQueue($queue);
                 }
-                if ($rule['Announce']) {
+                if ($rule['Announce'] && $rule['AnnouncementAvailable']) {
                     $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
                     $queue[] = ['messageID' => $messageID, 'device' => $rule['AnnouncementID'], 'text' => $text,
                         'remaining' => 1 + $rule['AnnouncementRepeats'], 'interval' => $rule['AnnouncementInterval'],
@@ -325,6 +337,7 @@ class VisuMessages extends IPSModuleStrict
             if ($job === null) {
                 return;
             }
+            $this->debug('Ausgabe gestartet', ['meldung' => $job['messageID'], 'typ' => $job['kind'] ?? 'audio', 'ziel' => $job['device'], 'verbleibend' => $job['remaining']]);
             try {
                 if (($job['kind'] ?? 'audio') === 'push') {
                     $this->sendPush($job);
@@ -350,9 +363,10 @@ class VisuMessages extends IPSModuleStrict
                     }
                     $this->writeAnnouncementQueue($queue);
                 });
+                $this->debug('Ausgabe abgeschlossen', ['meldung' => $job['messageID'], 'typ' => $job['kind'] ?? 'audio']);
             } catch (Throwable $e) {
                 $type = ($job['kind'] ?? 'audio') === 'push' ? 'Push' : 'Durchsage';
-                $this->SendDebug($type, $e->getMessage(), 0);
+                $this->debug($type, $e->getMessage(), 0);
                 $this->LogMessage($type . ' für Meldung ' . $job['messageID'] . ' abgebrochen: ' . $e->getMessage(), KL_WARNING);
             }
         } finally {
@@ -471,7 +485,7 @@ class VisuMessages extends IPSModuleStrict
 
     public function RequestAction(string $Ident, mixed $Value): void
     {
-        $this->SendDebug('Visualization action', json_encode(['action' => $Ident, 'value' => $Value]), 0);
+        $this->debug('Visualization action', json_encode(['action' => $Ident, 'valueType' => get_debug_type($Value), 'id' => is_int($Value) ? $Value : null]), 0);
         try {
             if ($Ident === 'Refresh') {
                 $this->locked(fn() => $this->publish($this->store()));
@@ -485,7 +499,7 @@ class VisuMessages extends IPSModuleStrict
             }
             $this->change($Ident, $Value);
         } catch (Throwable $e) {
-            $this->SendDebug('Visualization error', $e->getMessage(), 0);
+            $this->debug('Visualization error', $e->getMessage(), 0);
             $this->UpdateVisualizationValue(json_encode(['error' => $e->getMessage()], JSON_THROW_ON_ERROR));
         }
     }
@@ -679,7 +693,7 @@ class VisuMessages extends IPSModuleStrict
         if ($status !== 200 || !is_string($library) || strlen($library) > 12000000 ||
             !str_contains($library, 'FontAwesome') || !str_contains($library, 'findIconDefinition') ||
             stripos($library, '</script') !== false) {
-            $this->SendDebug('Icon library', 'Lokaler Symbolsatz nicht erreichbar: HTTP ' . $status . ' ' . $error, 0);
+            $this->debug('Icon library', 'Lokaler Symbolsatz nicht erreichbar: HTTP ' . $status . ' ' . $error, 0);
             return '';
         }
         $compressed = gzencode($library, 6);
@@ -728,7 +742,7 @@ class VisuMessages extends IPSModuleStrict
             }
             $profiles[$key] = ['colors' => $viewColors, 'css' => $this->ReadPropertyString($view . 'CSS')];
         }
-        return ['profiles' => $profiles, 'sdkProfile' => $this->ReadPropertyString('SDKColorProfile'), 'colors' => $colors, 'minWidth'  => $min, 'maxWidth' => $max,
+        return ['heading' => ['title' => $this->ReadPropertyString('HeadingTitle'), 'visible' => $this->ReadPropertyBoolean('ShowHeading')], 'profiles' => $profiles, 'sdkProfile' => $this->ReadPropertyString('SDKColorProfile'), 'colors' => $colors, 'minWidth'  => $min, 'maxWidth' => $max,
             'cardStyle' => ['scaleContents' => $this->ReadPropertyBoolean('MessageScaleContents'),
                 'borderColor' => sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger('MessageBorderColor')))),
                 'borderWidth' => max(0, min(12, $this->ReadPropertyInteger('MessageBorderWidth'))),
@@ -830,6 +844,13 @@ class VisuMessages extends IPSModuleStrict
         $this->UpdateVisualizationValue(json_encode(['messages' => $messages, 'appearance' => $this->appearance(), 'updatedAt' => $this->ReadAttributeInteger('UpdatedAt')], JSON_THROW_ON_ERROR));
     }
 
+    private function debug(string $message, mixed $data, int $format = 0): void
+    {
+        if ($this->ReadPropertyBoolean('DebugEnabled')) {
+            $this->SendDebug($message, is_string($data) ? $data : json_encode($data, JSON_THROW_ON_ERROR), $format);
+        }
+    }
+
     private function locked(callable $callback): void
     {
         $name = 'Visu-Messages.' . $this->InstanceID;
@@ -863,6 +884,27 @@ class VisuMessages extends IPSModuleStrict
             }
         }
         unset($section);
+        $audioCount = count(IPS_GetInstanceListByModuleID(self::ANNOUNCEMENT_MODULE));
+        $visuCount = count(IPS_GetInstanceListByModuleID(self::TILE_MODULE)) + count(IPS_GetInstanceListByModuleID(self::WEBFRONT_MODULE));
+        $info = [
+            ['type' => 'Label', 'caption' => $audioCount > 0 ? 'Durchsage: ' . $audioCount . ' Instanz(en) vorhanden.' : 'Durchsage: keine Instanz vorhanden. Optional das Modul Durchsage installieren und eine Instanz einrichten. Die Meldungsliste benötigt es nicht.'],
+            ['type' => 'Label', 'caption' => $visuCount > 0 ? 'Push: ' . $visuCount . ' Ziel-Visualisierung(en) vorhanden. Registrierte Mobilgeräte sind für die Zustellung erforderlich.' : 'Push: keine Kachel-/WebFront-Visualisierung vorhanden. Die Meldungsliste benötigt Push nicht.'],
+            ['type' => 'Label', 'caption' => 'Das separate Modul Benachrichtigung ist für direkten Push-Versand nicht erforderlich.']
+        ];
+        foreach (json_decode($this->GetBuffer('AvailabilityInfo') ?: '[]', true) as $warning) {
+            $info[] = ['type' => 'Label', 'caption' => $warning];
+        }
+        foreach ($form['elements'] as &$element) {
+            if (($element['caption'] ?? '') === 'Einstellungen') {
+                foreach ($element['items'] as &$panel) {
+                    if (($panel['name'] ?? '') === 'OptionalFeatures') {
+                        $panel['items'] = $info;
+                    }
+                }
+                unset($panel);
+            }
+        }
+        unset($element);
         $error = $this->GetBuffer('Error');
         if ($error !== '') {
             $form['elements'][] = ['type' => 'Label', 'caption' => 'Konfigurationsfehler: ' . $error];
