@@ -32,7 +32,7 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyString('MessageSize', 'normal');
         $this->RegisterPropertyInteger('MessageMinWidth', 240);
         $this->RegisterPropertyInteger('MessageMaxWidth', 760);
-        $this->RegisterPropertyInteger('MessageMinHeight', 0);
+        $this->RegisterPropertyInteger('MessageMinHeight', 60);
         $this->RegisterPropertyBoolean('MessageScaleContents', true);
         $this->RegisterPropertyInteger('MessageBorderColor', 0x374652);
         $this->RegisterPropertyInteger('MessageBorderWidth', 1);
