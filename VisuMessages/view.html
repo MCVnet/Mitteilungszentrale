@@ -27,7 +27,7 @@ article{display:grid;grid-template-columns:var(--icon-size,48px) minmax(0,1fr);c
 </div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
-<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.15</div>
+<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.17</div>
 </main>
 <script>
 'use strict';
@@ -67,9 +67,8 @@ function applyAppearance(appearance){
   root.style.setProperty('--icon-size',Math.max(24,Math.min(96,Number(appearance.iconSize)||48))+'px');
   if(appearance.colors){
     for(const key of ['bg','card','text','accent']){
-      if(/^#[0-9a-f]{6}$/i.test(appearance.colors[key]||'')||(key==='bg'&&appearance.colors[key]==='transparent'))root.style.setProperty('--'+key,appearance.colors[key]);
+      if(/^#[0-9a-f]{6}$/i.test(appearance.colors[key]||''))root.style.setProperty('--'+key,appearance.colors[key]);
     }
-    root.style.colorScheme=appearance.colors.bg==='transparent'?'normal':'';
     root.style.setProperty('--muted','var(--text)');
     root.style.setProperty('--line','color-mix(in srgb,var(--text) 22%,var(--card))');
   }else{
