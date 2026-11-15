@@ -1,27 +1,221 @@
 {
   "elements": [
-    {"type":"Label","caption":"Meldungen entstehen beim Wechsel von Bedingung nicht erfüllt zu erfüllt. Beim Start oder Speichern werden keine bestehenden Zustände nachgemeldet."},
-    {"type":"List","name":"Rules","caption":"Melderegeln","rowCount":8,"add":true,"delete":true,"columns":[
-      {"name":"Enabled","caption":"Aktiv","width":"65px","add":true,"edit":{"type":"CheckBox"}},
-      {"name":"VariableID","caption":"Variable","width":"220px","add":0,"edit":{"type":"SelectVariable"}},
-      {"name":"Operator","caption":"Bedingung","width":"140px","add":"eq","edit":{"type":"Select","options":[
-        {"caption":"gleich","value":"eq"},{"caption":"ungleich","value":"ne"},
-        {"caption":"kleiner","value":"lt"},{"caption":"kleiner / gleich","value":"le"},
-        {"caption":"größer","value":"gt"},{"caption":"größer / gleich","value":"ge"},
-        {"caption":"Text enthält","value":"contains"}
-      ]}},
-      {"name":"Value","caption":"Vergleichswert","width":"120px","add":"true","edit":{"type":"ValidationTextBox"}},
-      {"name":"Text","caption":"Nachricht","width":"auto","add":"{name}: {value}","edit":{"type":"ValidationTextBox"}}
-    ]},
-    {"type":"Label","caption":"Platzhalter: {name} Variablenname, {value} neuer Rohwert, {old} alter Rohwert, {id} Variablen-ID. Boolesche Werte: true/false. Texte: exakte Groß-/Kleinschreibung."},
-    {"type":"NumberSpinner","name":"Limit","caption":"Maximale Anzahl nicht angepinnter Meldungen","minimum":1,"maximum":5000},
-    {"type":"NumberSpinner","name":"Height","caption":"Höhe der HTML-Box in Pixeln","minimum":200,"maximum":2000},
-    {"type":"ValidationTextBox","name":"BaseURL","caption":"Symcon-Basisadresse für IPSView, z. B. https://symcon.example.de (leer = relativ)"},
-    {"type":"Label","caption":"Die WebView-Adresse enthält einen geheimen Zugriffsschlüssel. Wer die Adresse kennt, kann Meldungen lesen und bedienen. Bei externer Nutzung HTTPS oder VPN verwenden."}
+    {
+      "type": "Label",
+      "caption": "Meldungen entstehen beim Wechsel von Bedingung nicht erfüllt zu erfüllt. Beim Start oder Speichern werden keine bestehenden Zustände nachgemeldet."
+    },
+    {
+      "type": "List",
+      "name": "Rules",
+      "caption": "Melderegeln",
+      "rowCount": 8,
+      "add": true,
+      "delete": true,
+      "columns": [
+        {
+          "name": "Enabled",
+          "caption": "Aktiv",
+          "width": "65px",
+          "add": true,
+          "edit": {
+            "type": "CheckBox"
+          }
+        },
+        {
+          "name": "VariableID",
+          "caption": "Variable",
+          "width": "220px",
+          "add": 0,
+          "edit": {
+            "type": "SelectVariable"
+          }
+        },
+        {
+          "name": "Operator",
+          "caption": "Bedingung",
+          "width": "140px",
+          "add": "eq",
+          "edit": {
+            "type": "Select",
+            "options": [
+              {
+                "caption": "gleich",
+                "value": "eq"
+              },
+              {
+                "caption": "ungleich",
+                "value": "ne"
+              },
+              {
+                "caption": "kleiner",
+                "value": "lt"
+              },
+              {
+                "caption": "kleiner / gleich",
+                "value": "le"
+              },
+              {
+                "caption": "größer",
+                "value": "gt"
+              },
+              {
+                "caption": "größer / gleich",
+                "value": "ge"
+              },
+              {
+                "caption": "Text enthält",
+                "value": "contains"
+              }
+            ]
+          }
+        },
+        {
+          "name": "Value",
+          "caption": "Vergleichswert",
+          "width": "120px",
+          "add": "true",
+          "edit": {
+            "type": "ValidationTextBox"
+          }
+        },
+        {
+          "name": "Text",
+          "caption": "Nachricht",
+          "width": "auto",
+          "add": "{name}: {value}",
+          "edit": {
+            "type": "ValidationTextBox"
+          }
+        }
+      ]
+    },
+    {
+      "type": "Label",
+      "caption": "Platzhalter: {name} Variablenname, {value} neuer Rohwert, {old} alter Rohwert, {id} Variablen-ID. Boolesche Werte: true/false. Texte: exakte Groß-/Kleinschreibung."
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "Limit",
+      "caption": "Maximale Anzahl nicht angepinnter Meldungen",
+      "minimum": 1,
+      "maximum": 5000
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "Height",
+      "caption": "Höhe der HTML-Box in Pixeln",
+      "minimum": 200,
+      "maximum": 2000
+    },
+    {
+      "type": "ValidationTextBox",
+      "name": "BaseURL",
+      "caption": "Symcon-Basisadresse für IPSView, z. B. https://symcon.example.de (leer = relativ)"
+    },
+    {
+      "type": "Label",
+      "caption": "Die WebView-Adresse enthält einen geheimen Zugriffsschlüssel. Wer die Adresse kennt, kann Meldungen lesen und bedienen. Bei externer Nutzung HTTPS oder VPN verwenden."
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Darstellung: Symbole, Farben und Breite",
+      "expanded": true,
+      "items": [
+        {
+          "type": "CheckBox",
+          "name": "UseVariableIcons",
+          "caption": "Symbole der Variablen übernehmen (sonst Briefsymbol)"
+        },
+        {
+          "type": "CheckBox",
+          "name": "CustomColors",
+          "caption": "Eigene Farben verwenden (sonst automatisch hell/dunkel)"
+        },
+        {
+          "type": "SelectColor",
+          "name": "BackgroundColor",
+          "caption": "Hintergrundfarbe der Ansicht"
+        },
+        {
+          "type": "SelectColor",
+          "name": "MessageColor",
+          "caption": "Hintergrundfarbe der Meldungen"
+        },
+        {
+          "type": "SelectColor",
+          "name": "TextColor",
+          "caption": "Schriftfarbe"
+        },
+        {
+          "type": "SelectColor",
+          "name": "AccentColor",
+          "caption": "Akzentfarbe (Symbole und „Angepinnt“)"
+        },
+        {
+          "type": "Select",
+          "name": "MessageSize",
+          "caption": "Breite der Meldungen",
+          "options": [
+            {
+              "caption": "Mini · bis 320 px",
+              "value": "mini"
+            },
+            {
+              "caption": "Kompakt · bis 480 px",
+              "value": "compact"
+            },
+            {
+              "caption": "Normal · bis 760 px",
+              "value": "normal"
+            },
+            {
+              "caption": "Groß · bis 1100 px",
+              "value": "large"
+            },
+            {
+              "caption": "Benutzerdefiniert",
+              "value": "custom"
+            }
+          ]
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "MessageMinWidth",
+          "caption": "Benutzerdefiniert: Mindestbreite (Pixel)",
+          "minimum": 120,
+          "maximum": 3000
+        },
+        {
+          "type": "NumberSpinner",
+          "name": "MessageMaxWidth",
+          "caption": "Benutzerdefiniert: Maximalbreite (Pixel)",
+          "minimum": 120,
+          "maximum": 3000
+        },
+        {
+          "type": "Label",
+          "caption": "Farben und Breite gelten für alle Ansichten dieser Instanz. Mindest-/Maximalbreite gelten bei Benutzerdefiniert. Auf schmalen Displays wird die verfügbare Breite genutzt. Neue Symbole werden auch für bestehende Meldungen übernommen."
+        }
+      ]
+    }
   ],
   "actions": [
-    {"type":"Button","caption":"Testmeldung erzeugen","onClick":"VMMSG_AddTestMessage($id);"},
-    {"type":"Button","caption":"WebView-Zugriffsschlüssel erneuern","onClick":"VMMSG_RotateAccessKey($id);"}
+    {
+      "type": "Button",
+      "caption": "Testmeldung erzeugen",
+      "onClick": "VMMSG_AddTestMessage($id);"
+    },
+    {
+      "type": "Button",
+      "caption": "WebView-Zugriffsschlüssel erneuern",
+      "onClick": "VMMSG_RotateAccessKey($id);"
+    }
   ],
-  "status":[{"code":200,"icon":"error","caption":"Ungültige Melderegel oder Einstellung – siehe Konfigurationshinweis"}]
+  "status": [
+    {
+      "code": 200,
+      "icon": "error",
+      "caption": "Ungültige Melderegel oder Einstellung – siehe Konfigurationshinweis"
+    }
+  ]
 }
