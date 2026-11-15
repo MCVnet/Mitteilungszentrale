@@ -724,6 +724,78 @@
         },
         {
           "type": "ExpansionPanel",
+          "caption": "Farben · Kachelvisu",
+          "expanded": false,
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "TileOwnColors",
+              "caption": "Eigene Farben verwenden"
+            },
+            {
+              "type": "Label",
+              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "TileBackgroundColor",
+                  "caption": "Ansicht",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "TileMessageColor",
+                  "caption": "Meldung",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "SelectColor",
+                  "name": "TileTextColor",
+                  "caption": "Schrift",
+                  "allowTransparent": false,
+                  "width": "300px"
+                },
+                {
+                  "type": "SelectColor",
+                  "name": "TileAccentColor",
+                  "caption": "Akzent / Symbole",
+                  "allowTransparent": false,
+                  "width": "300px"
+                }
+              ]
+            },
+            {
+              "type": "ExpansionPanel",
+              "caption": "Erweitert · CSS",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "ValidationTextBox",
+                  "name": "TileCSS",
+                  "caption": "Eigenes CSS",
+                  "multiline": true,
+                  "width": "100%"
+                },
+                {
+                  "type": "Label",
+                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
           "caption": "Farben · WebFront",
           "expanded": false,
           "items": [
@@ -854,78 +926,6 @@
                 {
                   "type": "ValidationTextBox",
                   "name": "IPSViewCSS",
-                  "caption": "Eigenes CSS",
-                  "multiline": true,
-                  "width": "100%"
-                },
-                {
-                  "type": "Label",
-                  "caption": "Optional, gilt nur für diese Visualisierung. Beispiel: article { border-radius: 16px; }. Die Farbfelder haben Vorrang vor CSS-Variablen."
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "ExpansionPanel",
-          "caption": "Farben · Kachelvisu",
-          "expanded": false,
-          "items": [
-            {
-              "type": "CheckBox",
-              "name": "TileOwnColors",
-              "caption": "Eigene Farben verwenden"
-            },
-            {
-              "type": "Label",
-              "caption": "Ausgeschaltet: gemeinsame Vorgabe. Eingeschaltet: die vier Farben unten."
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "TileBackgroundColor",
-                  "caption": "Ansicht",
-                  "allowTransparent": false,
-                  "width": "300px"
-                },
-                {
-                  "type": "SelectColor",
-                  "name": "TileMessageColor",
-                  "caption": "Meldung",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "RowLayout",
-              "items": [
-                {
-                  "type": "SelectColor",
-                  "name": "TileTextColor",
-                  "caption": "Schrift",
-                  "allowTransparent": false,
-                  "width": "300px"
-                },
-                {
-                  "type": "SelectColor",
-                  "name": "TileAccentColor",
-                  "caption": "Akzent / Symbole",
-                  "allowTransparent": false,
-                  "width": "300px"
-                }
-              ]
-            },
-            {
-              "type": "ExpansionPanel",
-              "caption": "Erweitert · CSS",
-              "expanded": false,
-              "items": [
-                {
-                  "type": "ValidationTextBox",
-                  "name": "TileCSS",
                   "caption": "Eigenes CSS",
                   "multiline": true,
                   "width": "100%"
