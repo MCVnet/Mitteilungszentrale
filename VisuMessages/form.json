@@ -219,6 +219,18 @@
             },
             {
               "type": "NumberSpinner",
+              "name": "MessageMinHeight",
+              "caption": "Meldung: Mindesthöhe (Pixel, 0 = automatisch)",
+              "minimum": 0,
+              "maximum": 2000,
+              "width": "350px"
+            },
+            {
+              "type": "Label",
+              "caption": "Gilt für einzelne Meldungen in allen drei Visualisierungen. Lange Texte und Bedienelemente vergrößern die Meldung bei Bedarf."
+            },
+            {
+              "type": "NumberSpinner",
               "name": "Height",
               "caption": "HTML-Box: Höhe (Pixel)",
               "minimum": 200,
