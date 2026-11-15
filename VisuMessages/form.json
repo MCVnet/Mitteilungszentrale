@@ -152,6 +152,20 @@
           "visible": false,
           "save": true,
           "add": 0
+        },
+        {
+          "name": "PushRepeats",
+          "caption": "Push-Wiederholungen",
+          "visible": false,
+          "save": true,
+          "add": 0
+        },
+        {
+          "name": "PushInterval",
+          "caption": "Push-Abstand",
+          "visible": false,
+          "save": true,
+          "add": 60
         }
       ],
       "width": "100%",
@@ -208,15 +222,27 @@
           "caption": "Vergleichswert"
         },
         {
-          "type": "ValidationTextBox",
-          "name": "Text",
+          "type": "ExpansionPanel",
           "caption": "Nachricht",
-          "width": "100%"
+          "expanded": true,
+          "items": [
+            {
+              "type": "ValidationTextBox",
+              "name": "Text",
+              "caption": "Nachrichtentext",
+              "width": "100%",
+              "multiline": true
+            },
+            {
+              "type": "Label",
+              "caption": "Dieser Text erscheint in der Meldungsliste und wird auch für Durchsage und Push verwendet. Platzhalter: {parent}, {name}, {value}, {old}, {id}."
+            }
+          ]
         },
         {
           "type": "ExpansionPanel",
           "caption": "Durchsage und Wiederholung",
-          "expanded": true,
+          "expanded": false,
           "items": [
             {
               "type": "CheckBox",
@@ -269,7 +295,7 @@
         {
           "type": "ExpansionPanel",
           "caption": "Push-Benachrichtigung",
-          "expanded": true,
+          "expanded": false,
           "items": [
             {
               "type": "CheckBox",
@@ -301,8 +327,29 @@
               "width": "100%"
             },
             {
+              "type": "RowLayout",
+              "items": [
+                {
+                  "type": "NumberSpinner",
+                  "name": "PushRepeats",
+                  "caption": "Zusätzliche Push-Wiederholungen",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "width": "300px"
+                },
+                {
+                  "type": "NumberSpinner",
+                  "name": "PushInterval",
+                  "caption": "Abstand (Sekunden)",
+                  "minimum": 1,
+                  "maximum": 86400,
+                  "width": "250px"
+                }
+              ]
+            },
+            {
               "type": "Label",
-              "caption": "Einmaliger Push mit dem aktuellen Meldungstext (maximal 256 Zeichen). Unterstützt Kachelvisu und WebFront mit registrierten Mobilgeräten. Das Sprungziel muss in der gewählten Visu verfügbar sein. Durchsage-Wiederholungen erzeugen keine zusätzlichen Push-Nachrichten."
+              "caption": "0 Wiederholungen = einmal senden. 2 Wiederholungen = insgesamt 3 Push-Nachrichten. Der Abstand gilt ab dem vorherigen Versandaufruf. Push und Durchsage haben voneinander unabhängige Wiederholungen. Löschen beendet offene Wiederholungen. Das Sprungziel muss in der gewählten Visu verfügbar sein."
             }
           ]
         }
