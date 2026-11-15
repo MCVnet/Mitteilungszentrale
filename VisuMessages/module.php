@@ -41,6 +41,12 @@ class VisuMessages extends IPSModuleStrict
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        // Remove all oversized icon buffers left by versions 0.10 and 0.11.
+        foreach ($this->GetBufferList() as $buffer) {
+            if (str_starts_with($buffer, 'IconLibrary')) {
+                $this->SetBuffer($buffer, '');
+            }
+        }
         if ($this->ReadAttributeString('Token') === '') {
             $this->WriteAttributeString('Token', bin2hex(random_bytes(32)));
         }
@@ -308,25 +314,23 @@ class VisuMessages extends IPSModuleStrict
     private function embeddedIconLibrary(): string
     {
         $port = max(1, min(65535, $this->ReadPropertyInteger('LocalWebPort')));
-        // 0.10 used one oversized buffer, which Symcon truncates. Never reuse it.
-        $legacyKey = 'IconLibrary' . $port;
-        if ($this->GetBuffer($legacyKey) !== '') {
-            $this->SetBuffer($legacyKey, '');
-        }
-        $key = 'IconLibraryV2_' . $port . '_';
-        $meta = json_decode($this->GetBuffer($key . 'Meta'), true);
-        if (is_array($meta) && is_int($meta['count'] ?? null) && $meta['count'] > 0 && $meta['count'] <= 128) {
-            $encoded = '';
-            for ($index = 0; $index < $meta['count']; $index++) {
-                $encoded .= $this->GetBuffer($key . $index);
+        // The entire instance buffer space is limited; symbol assets belong on disk.
+        $directory = rtrim(sys_get_temp_dir(), '/\\') . '/symcon-visu-messages-' . substr(hash('sha256', IPS_GetKernelDir()), 0, 16);
+        $file = $directory . '/icons-' . $port . '.cache';
+        if (is_file($file) && !is_link($file)) {
+            $packed = @file_get_contents($file);
+            if (is_string($packed) && strlen($packed) <= 12001000) {
+                $separator = strpos($packed, "\n");
+                if ($separator !== false && $separator < 512) {
+                    $meta = json_decode(substr($packed, 0, $separator), true);
+                    $cached = @gzdecode(substr($packed, $separator + 1), 12000000);
+                    if (is_array($meta) && is_string($cached) &&
+                        strlen($cached) === ($meta['length'] ?? -1) &&
+                        hash_equals((string) ($meta['hash'] ?? ''), hash('sha256', $cached))) {
+                        return $cached;
+                    }
+                }
             }
-            $compressed = base64_decode($encoded, true);
-            $cached = $compressed === false ? false : @gzdecode($compressed, 12000000);
-            if (is_string($cached) && strlen($cached) === ($meta['length'] ?? -1) &&
-                hash_equals((string) ($meta['hash'] ?? ''), hash('sha256', $cached))) {
-                return $cached;
-            }
-            $this->SetBuffer($key . 'Meta', '');
         }
         $curl = curl_init('http://127.0.0.1:' . $port . '/icons.js');
         curl_setopt_array($curl, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 1,
@@ -346,15 +350,20 @@ class VisuMessages extends IPSModuleStrict
             return '';
         }
         $compressed = gzencode($library, 6);
-        if ($compressed !== false) {
-            // ASCII chunks stay well below Symcon's 256 KiB warning threshold.
-            $parts = str_split(base64_encode($compressed), 128 * 1024);
-            foreach ($parts as $index => $part) {
-                $this->SetBuffer($key . $index, $part);
+        if ($compressed !== false && !is_link($directory) &&
+            (is_dir($directory) || @mkdir($directory, 0700, true))) {
+            $meta = json_encode(['length' => strlen($library), 'hash' => hash('sha256', $library)], JSON_THROW_ON_ERROR);
+            $temporary = @tempnam($directory, 'icons-');
+            if ($temporary !== false) {
+                @chmod($temporary, 0600);
+                if (@file_put_contents($temporary, $meta . "\n" . $compressed, LOCK_EX) !== false) {
+                    if (!@rename($temporary, $file)) {
+                        @unlink($temporary);
+                    }
+                } else {
+                    @unlink($temporary);
+                }
             }
-            // Publish metadata last so readers never accept a partial cache.
-            $this->SetBuffer($key . 'Meta', json_encode(['count' => count($parts),
-                'length' => strlen($library), 'hash' => hash('sha256', $library)], JSON_THROW_ON_ERROR));
         }
         return $library;
     }
