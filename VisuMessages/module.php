@@ -32,6 +32,7 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyString('MessageSize', 'normal');
         $this->RegisterPropertyInteger('MessageMinWidth', 240);
         $this->RegisterPropertyInteger('MessageMaxWidth', 760);
+        $this->RegisterPropertyInteger('MessageMinHeight', 0);
         $this->RegisterAttributeString('Store', '{"next":1,"messages":[]}');
         $this->RegisterAttributeString('Token', '');
         $this->RegisterVariableString('HTML', 'Meldungen (WebFront / IPSView)', [
@@ -457,6 +458,7 @@ class VisuMessages extends IPSModuleStrict
             $profiles[$key] = ['colors' => $viewColors, 'css' => $this->ReadPropertyString($view . 'CSS')];
         }
         return ['profiles' => $profiles, 'sdkProfile' => $this->ReadPropertyString('SDKColorProfile'), 'colors' => $colors, 'minWidth'  => $min, 'maxWidth' => $max,
+            'minHeight' => max(0, min(2000, $this->ReadPropertyInteger('MessageMinHeight'))),
             'iconSize' => max(24, min(96, $this->ReadPropertyInteger('IconSize')))];
     }
 
