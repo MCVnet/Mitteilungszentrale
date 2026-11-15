@@ -20,11 +20,17 @@
 </div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
-<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.6</div>
+<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.7</div>
 </main>
 <script>
 'use strict';
 const config = __MZ_CONFIG__;
+if(config.mode==='sdk'){
+  // Symcon overlays its tile title and controls above the iframe.
+  // Keep clickable content below the reserved top area.
+  const inset=Number(new URLSearchParams(location.search).get('margintop'));
+  document.querySelector('main').style.paddingTop=Math.max(60,Math.min(200,Number.isFinite(inset)?inset:60))+'px';
+}
 const list = document.getElementById('list');
 const status = document.getElementById('status');
 let messages = config.messages || [];
