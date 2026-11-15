@@ -27,7 +27,7 @@ article{display:grid;grid-template-columns:var(--icon-size,48px) minmax(0,1fr);c
 </div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
-<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.14</div>
+<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.15</div>
 </main>
 <script>
 'use strict';
@@ -46,9 +46,24 @@ let busy = false;
 let pending = null;
 let iconLibrary=null;
 const iconCache=new Map();
+function colorProfile(appearance){
+  if(config.mode!=='sdk')return 'webfront';
+  if(['ipsview','tile'].includes(appearance.sdkProfile))return appearance.sdkProfile;
+  // Tile Visu embeds HTML in an iframe; native IPSView loads it as a top-level document.
+  return window.parent===window?'ipsview':'tile';
+}
+let customStyle=null;
 function applyAppearance(appearance){
   if(!appearance)return;
   const root=document.documentElement;
+  const profile=colorProfile(appearance);
+  root.dataset.visu=profile;
+  const selected=appearance.profiles&&appearance.profiles[profile];
+  if(selected)appearance={...appearance,colors:selected.colors};
+  if(!customStyle){customStyle=document.createElement('style');customStyle.id='visu-custom-css';document.head.append(customStyle);}
+  customStyle.textContent=selected&&typeof selected.css==='string'?selected.css:'';
+  for(const key of ['bg','card','text','accent','muted','line'])root.style.removeProperty('--'+key);
+  root.style.colorScheme='';
   root.style.setProperty('--icon-size',Math.max(24,Math.min(96,Number(appearance.iconSize)||48))+'px');
   if(appearance.colors){
     for(const key of ['bg','card','text','accent']){
