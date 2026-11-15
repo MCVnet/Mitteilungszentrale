@@ -16,7 +16,6 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyBoolean('EmbedSDKIcons', true);
         $this->RegisterPropertyInteger('LocalWebPort', 3777);
         $this->RegisterPropertyBoolean('CustomColors', false);
-        $this->RegisterPropertyBoolean('TransparencyTest', false);
         $this->RegisterPropertyInteger('BackgroundColor', 0x141c25);
         $this->RegisterPropertyInteger('MessageColor', 0x1e2a36);
         $this->RegisterPropertyInteger('TextColor', 0xedf3f7);
@@ -50,6 +49,20 @@ class VisuMessages extends IPSModuleStrict
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        // Replace previously cleared colors with the original solid defaults once.
+        $normalized = false;
+        foreach (['', 'WebFront', 'IPSView', 'Tile'] as $prefix) {
+            foreach (['BackgroundColor' => 0x141c25, 'MessageColor' => 0x1e2a36, 'TextColor' => 0xedf3f7, 'AccentColor' => 0x7ed8b6] as $property => $default) {
+                if ($this->ReadPropertyInteger($prefix . $property) < 0) {
+                    IPS_SetProperty($this->InstanceID, $prefix . $property, $default);
+                    $normalized = true;
+                }
+            }
+        }
+        if ($normalized) {
+            IPS_ApplyChanges($this->InstanceID);
+            return;
+        }
         // Remove all oversized icon buffers left by versions 0.10 and 0.11.
         foreach ($this->GetBufferList() as $buffer) {
             if (str_starts_with($buffer, 'IconLibrary')) {
@@ -180,22 +193,6 @@ class VisuMessages extends IPSModuleStrict
 
     public function GetVisualizationTile(): string
     {
-        if ($this->ReadPropertyBoolean('TransparencyTest')) {
-            return <<<'HTML'
-<!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-html,body{background:transparent!important;background-image:none!important;margin:0;min-height:100%;color:#0099dd;font:18px/1.5 sans-serif}
-main{margin:24px;padding:20px;border:3px dashed #0099dd;background:transparent!important}
-p{margin:12px 0}.reference{background:#071526;color:#fff;padding:12px}
-</style></head><body><main>
-<strong>Visu-Messages · Transparenztest A</strong>
-<p>Dieser Bereich hat keinen eigenen Hintergrund. Hier sollte dein IPSView-Hintergrund durchscheinen.</p>
-<p class="reference">Referenz B: Dieses Feld ist absichtlich dunkelblau (#071526).</p>
-<p>Wenn A weiß bleibt, B aber dunkelblau ist, kommt das Weiß aus der Einbettung oder dem Browser-Canvas. Die normalen Modulfarben und das eigene CSS sind in diesem Test ausgeschaltet.</p>
-</main><script>function handleMessage() {}</script></body></html>
-HTML;
-        }
         return $this->page(['mode' => 'sdk', 'messages' => $this->messagesForVisualization($this->store())]);
     }
 
@@ -442,9 +439,7 @@ HTML;
             $colors = [];
             foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $key => $property) {
                 $value = $this->ReadPropertyInteger($property);
-                $colors[$key] = $key === 'bg' && $value < 0
-                    ? 'transparent'
-                    : sprintf('#%06x', max(0, min(0xffffff, $value)));
+                $colors[$key] = sprintf('#%06x', max(0, min(0xffffff, $value)));
             }
         }
         $profiles = [];
@@ -454,7 +449,7 @@ HTML;
                 $viewColors = [];
                 foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $color => $property) {
                     $value = $this->ReadPropertyInteger($view . $property);
-                    $viewColors[$color] = $color === 'bg' && $value < 0 ? 'transparent' : sprintf('#%06x', max(0, min(0xffffff, $value)));
+                    $viewColors[$color] = sprintf('#%06x', max(0, min(0xffffff, $value)));
                 }
             }
             $profiles[$key] = ['colors' => $viewColors, 'css' => $this->ReadPropertyString($view . 'CSS')];
