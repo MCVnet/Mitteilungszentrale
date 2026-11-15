@@ -18,6 +18,29 @@
           }
         },
         {
+          "name": "Priority",
+          "caption": "Prio",
+          "width": "85px",
+          "add": 3,
+          "edit": {
+            "type": "Select",
+            "options": [
+              {
+                "caption": "1 · Hoch (rot)",
+                "value": 1
+              },
+              {
+                "caption": "2 · Mittel (gelb)",
+                "value": 2
+              },
+              {
+                "caption": "3 · Normal (Standardfarbe)",
+                "value": 3
+              }
+            ]
+          }
+        },
+        {
           "name": "VariableID",
           "caption": "Variable",
           "width": "480px",
@@ -180,6 +203,26 @@
           "name": "VariableID",
           "caption": "Variable",
           "width": "100%"
+        },
+        {
+          "type": "Select",
+          "name": "Priority",
+          "caption": "Priorität der Meldung",
+          "options": [
+            {
+              "caption": "1 · Hoch (rot)",
+              "value": 1
+            },
+            {
+              "caption": "2 · Mittel (gelb)",
+              "value": 2
+            },
+            {
+              "caption": "3 · Normal (Standardfarbe)",
+              "value": 3
+            }
+          ],
+          "width": "350px"
         },
         {
           "type": "Select",
