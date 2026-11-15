@@ -4,6 +4,8 @@ require_once __DIR__ . '/Rules.php';
 
 class VisuMessages extends IPSModuleStrict
 {
+    private const TILE_MODULE = '{B5B875BB-9B76-45FD-4E67-2607E45B3AC4}';
+    private const WEBFRONT_MODULE = '{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}';
     private const ANNOUNCEMENT_MODULE = '{26F752F0-4D4E-A52C-DB3C-35DFEA979F44}';
     public function Create(): void
     {
@@ -71,7 +73,7 @@ class VisuMessages extends IPSModuleStrict
                 if (!is_array($rule)) {
                     continue;
                 }
-                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50] as $field => $default) {
+                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50, 'PushEnabled' => false, 'PushVisuID' => 0, 'PushTitle' => 'Visu-Messages', 'PushTargetID' => 0] as $field => $default) {
                     if (!array_key_exists($field, $rule)) {
                         $rule[$field] = $default;
                         $changed = true;
@@ -142,6 +144,12 @@ class VisuMessages extends IPSModuleStrict
                     if ($rule['Announce']) {
                         $this->RegisterReference($rule['AnnouncementID']);
                     }
+                    if ($rule['PushEnabled']) {
+                        $this->RegisterReference($rule['PushVisuID']);
+                        if ($rule['PushTargetID'] > 0) {
+                            $this->RegisterReference($rule['PushTargetID']);
+                        }
+                    }
                 }
                 $this->SetBuffer('ActiveRules', json_encode($rules, JSON_THROW_ON_ERROR));
                 $this->SetBuffer('Error', '');
@@ -205,6 +213,18 @@ class VisuMessages extends IPSModuleStrict
                     throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Wiederholungen 0–100, Abstand 1–86400 Sekunden.');
                 }
             }
+            $rule['PushEnabled'] = (bool) ($rule['PushEnabled'] ?? false);
+            $rule['PushVisuID'] = (int) ($rule['PushVisuID'] ?? 0);
+            $rule['PushTitle'] = (string) ($rule['PushTitle'] ?? 'Visu-Messages');
+            $rule['PushTargetID'] = (int) ($rule['PushTargetID'] ?? 0);
+            if ($rule['PushEnabled']) {
+                if (!IPS_InstanceExists($rule['PushVisuID']) || !in_array(IPS_GetInstance($rule['PushVisuID'])['ModuleInfo']['ModuleID'], [self::TILE_MODULE, self::WEBFRONT_MODULE], true)) {
+                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': eine Kachel- oder WebFront-Visualisierung für Push auswählen.');
+                }
+                if ($rule['PushTargetID'] < 0 || ($rule['PushTargetID'] > 0 && !IPS_ObjectExists($rule['PushTargetID']))) {
+                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': ungültiges Push-Sprungziel.');
+                }
+            }
             $rule['AnnouncementKey'] = hash('sha256', json_encode($rule, JSON_THROW_ON_ERROR));
             $active[] = $rule;
         }
@@ -251,6 +271,14 @@ class VisuMessages extends IPSModuleStrict
                         'interval' => $rule['AnnouncementInterval'],
                         'volume' => $rule['AnnouncementOwnVolume'] ? $rule['AnnouncementVolume'] : null]
                 ]);
+                if ($rule['PushEnabled']) {
+                    $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
+                    $queue[] = ['kind' => 'push', 'messageID' => $messageID, 'device' => $rule['PushVisuID'], 'text' => $text,
+                        'title' => $rule['PushTitle'], 'target' => $rule['PushTargetID'] ?: $this->InstanceID,
+                        'remaining' => 1, 'interval' => 1, 'due' => time(), 'ruleKey' => $rule['AnnouncementKey'],
+                        'generation' => $this->ReadAttributeInteger('AnnouncementGeneration')];
+                    $this->writeAnnouncementQueue($queue);
+                }
                 if ($rule['Announce']) {
                     $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
                     $queue[] = ['messageID' => $messageID, 'device' => $rule['AnnouncementID'], 'text' => $text,
@@ -291,16 +319,20 @@ class VisuMessages extends IPSModuleStrict
                 return;
             }
             try {
-                if (!function_exists('DS_Play') || !IPS_InstanceExists($job['device']) ||
-                    IPS_GetInstance($job['device'])['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
-                    throw new RuntimeException('Durchsage-Modul oder Ausgabegerät nicht verfügbar.');
-                }
-                if (IPS_GetInstance($job['device'])['InstanceStatus'] !== 102) {
-                    throw new RuntimeException('Durchsage-Instanz ist nicht betriebsbereit.');
-                }
-                // The current official module returns void on success; older releases may return bool.
-                if ($this->playAnnouncement($job) === false) {
-                    throw new RuntimeException('Durchsage wurde vom Modul abgelehnt.');
+                if (($job['kind'] ?? 'audio') === 'push') {
+                    $this->sendPush($job);
+                } else {
+                    if (!function_exists('DS_Play') || !IPS_InstanceExists($job['device']) ||
+                        IPS_GetInstance($job['device'])['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
+                        throw new RuntimeException('Durchsage-Modul oder Ausgabegerät nicht verfügbar.');
+                    }
+                    if (IPS_GetInstance($job['device'])['InstanceStatus'] !== 102) {
+                        throw new RuntimeException('Durchsage-Instanz ist nicht betriebsbereit.');
+                    }
+                    // The current official module returns void on success; older releases may return bool.
+                    if ($this->playAnnouncement($job) === false) {
+                        throw new RuntimeException('Durchsage wurde vom Modul abgelehnt.');
+                    }
                 }
                 $this->locked(function () use ($job): void {
                     $queue = $this->prunedAnnouncementQueue();
@@ -312,12 +344,39 @@ class VisuMessages extends IPSModuleStrict
                     $this->writeAnnouncementQueue($queue);
                 });
             } catch (Throwable $e) {
-                $this->SendDebug('Durchsage', $e->getMessage(), 0);
-                $this->LogMessage('Durchsage für Meldung ' . $job['messageID'] . ' abgebrochen: ' . $e->getMessage(), KL_WARNING);
+                $type = ($job['kind'] ?? 'audio') === 'push' ? 'Push' : 'Durchsage';
+                $this->SendDebug($type, $e->getMessage(), 0);
+                $this->LogMessage($type . ' für Meldung ' . $job['messageID'] . ' abgebrochen: ' . $e->getMessage(), KL_WARNING);
             }
         } finally {
             IPS_SemaphoreLeave($worker);
         }
+    }
+
+    private function sendPush(array $job): void
+    {
+        if (!IPS_InstanceExists($job['device'])) {
+            throw new RuntimeException('Ziel-Visualisierung nicht verfügbar.');
+        }
+        $module = IPS_GetInstance($job['device'])['ModuleInfo']['ModuleID'];
+        $title = $this->pushText($job['title'], 32);
+        $text = $this->pushText($job['text'], 256);
+        if ($module === self::TILE_MODULE && function_exists('VISU_PostNotification')) {
+            $result = VISU_PostNotification($job['device'], $title, $text, 'alarm', $job['target']);
+        } elseif ($module === self::WEBFRONT_MODULE && function_exists('WFC_PushNotification')) {
+            $result = WFC_PushNotification($job['device'], $title, $text, 'alarm', $job['target']);
+        } else {
+            throw new RuntimeException('Push-Funktion für diese Visualisierung nicht verfügbar.');
+        }
+        if ($result === false) {
+            throw new RuntimeException('Push-Nachricht wurde nicht angenommen. Zielobjekt und Gerätezuordnung prüfen.');
+        }
+    }
+
+    private function pushText(string $text, int $limit): string
+    {
+        preg_match_all('/./us', $text, $characters);
+        return implode('', array_slice($characters[0], 0, $limit));
     }
 
     private function playAnnouncement(array $job): mixed
@@ -373,7 +432,7 @@ class VisuMessages extends IPSModuleStrict
             return false;
         }
         foreach (json_decode($this->GetBuffer('ActiveRules') ?: '[]', true) as $rule) {
-            if (($rule['Announce'] ?? false) && $rule['AnnouncementKey'] === $job['ruleKey']) {
+            if ((($rule['Announce'] ?? false) || ($rule['PushEnabled'] ?? false)) && $rule['AnnouncementKey'] === $job['ruleKey']) {
                 return true;
             }
         }
@@ -385,7 +444,7 @@ class VisuMessages extends IPSModuleStrict
         $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
         $ids = array_fill_keys(array_column($this->store()['messages'], 'id'), true);
         $rules = json_decode($this->GetBuffer('ActiveRules') ?: '[]', true);
-        $keys = array_fill_keys(array_column(array_filter($rules, static fn(array $rule): bool => (bool) ($rule['Announce'] ?? false)), 'AnnouncementKey'), true);
+        $keys = array_fill_keys(array_column(array_filter($rules, static fn(array $rule): bool => (bool) (($rule['Announce'] ?? false) || ($rule['PushEnabled'] ?? false))), 'AnnouncementKey'), true);
         $generation = $this->ReadAttributeInteger('AnnouncementGeneration');
         return array_values(array_filter($queue, static fn(array $job): bool =>
             $job['generation'] === $generation && isset($ids[$job['messageID']], $keys[$job['ruleKey']])));
@@ -778,6 +837,23 @@ class VisuMessages extends IPSModuleStrict
     public function GetConfigurationForm(): string
     {
         $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        $options = [['caption' => 'Bitte Ziel-Visualisierung auswählen', 'value' => 0]];
+        foreach ([self::TILE_MODULE => 'Kachelvisu', self::WEBFRONT_MODULE => 'WebFront'] as $module => $type) {
+            foreach (IPS_GetInstanceListByModuleID($module) as $instance) {
+                $options[] = ['caption' => $type . ' · ' . IPS_GetName($instance) . ' (#' . $instance . ')', 'value' => $instance];
+            }
+        }
+        foreach ($form['elements'][0]['form'] as &$section) {
+            if (($section['caption'] ?? '') === 'Push-Benachrichtigung') {
+                foreach ($section['items'] as &$field) {
+                    if (($field['name'] ?? '') === 'PushVisuID') {
+                        $field['options'] = $options;
+                    }
+                }
+                unset($field);
+            }
+        }
+        unset($section);
         $error = $this->GetBuffer('Error');
         if ($error !== '') {
             $form['elements'][] = ['type' => 'Label', 'caption' => 'Konfigurationsfehler: ' . $error];
