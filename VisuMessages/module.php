@@ -46,6 +46,19 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('MessageBorderWidth', 1);
         $this->RegisterPropertyInteger('MessageRadius', 12);
         $this->RegisterPropertyString('MessageShadow', 'none');
+        $this->RegisterPropertyString('AppearanceEditor', 'tile');
+        foreach (['Tile', 'WebFront', 'IPSView'] as $view) {
+            $this->RegisterPropertyBoolean($view . 'OwnLayout', false);
+            foreach (['UseVariableIcons', 'MessageScaleContents', 'ShowHeading'] as $property) {
+                $this->RegisterPropertyBoolean($view . $property, $this->ReadPropertyBoolean($property));
+            }
+            foreach (['MessageSize', 'MessageShadow', 'HeadingTitle'] as $property) {
+                $this->RegisterPropertyString($view . $property, $this->ReadPropertyString($property));
+            }
+            foreach (['MessageMinWidth', 'MessageMaxWidth', 'MessageMinHeight', 'IconSize', 'MessageFontSize', 'MessageMetaFontSize', 'MessageBorderColor', 'MessageBorderWidth', 'MessageRadius'] as $property) {
+                $this->RegisterPropertyInteger($view . $property, $this->ReadPropertyInteger($property));
+            }
+        }
         $this->RegisterAttributeString('Store', '{"next":1,"messages":[]}');
         $this->RegisterAttributeString('Token', '');
         $this->RegisterAttributeInteger('UpdatedAt', 0);
@@ -724,50 +737,79 @@ class VisuMessages extends IPSModuleStrict
 
     private function appearance(): array
     {
-        $sizes = ['mini' => [160, 320], 'compact' => [200, 480], 'normal' => [240, 760], 'large' => [280, 1100]];
-        $size = $this->ReadPropertyString('MessageSize');
-        $min = max(120, min(3000, $this->ReadPropertyInteger('MessageMinWidth')));
-        $max = max($min, min(3000, $this->ReadPropertyInteger('MessageMaxWidth')));
-        [$min, $max] = $size === 'custom' ? [$min, $max] : ($sizes[$size] ?? $sizes['normal']);
-        $colors = null;
-        if ($this->ReadPropertyBoolean('CustomColors')) {
-            $colors = [];
-            foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $key => $property) {
-                $value = $this->ReadPropertyInteger($property);
-                $colors[$key] = sprintf('#%06x', max(0, min(0xffffff, $value)));
-            }
-        }
+        $colors = $this->ReadPropertyBoolean('CustomColors') ? $this->appearanceColors('') : null;
         $profiles = [];
-        foreach (['webfront' => 'WebFront', 'ipsview' => 'IPSView', 'tile' => 'Tile'] as $key => $view) {
-            $viewColors = $colors;
-            if ($this->ReadPropertyBoolean($view . 'OwnColors')) {
-                $viewColors = [];
-                foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $color => $property) {
-                    $value = $this->ReadPropertyInteger($view . $property);
-                    $viewColors[$color] = sprintf('#%06x', max(0, min(0xffffff, $value)));
-                }
-            }
-            $profiles[$key] = ['colors' => $viewColors, 'css' => $this->ReadPropertyString($view . 'CSS')];
+        foreach (['tile' => 'Tile', 'webfront' => 'WebFront', 'ipsview' => 'IPSView'] as $key => $view) {
+            $profiles[$key] = [
+                'colors' => $this->ReadPropertyBoolean($view . 'OwnColors') ? $this->appearanceColors($view) : $colors,
+                'css' => $this->ReadPropertyString($view . 'CSS'),
+                'layout' => $this->ReadPropertyBoolean($view . 'OwnLayout') ? $this->layoutAppearance($view) : null
+            ];
         }
-        return ['heading' => ['title' => $this->ReadPropertyString('HeadingTitle'), 'visible' => $this->ReadPropertyBoolean('ShowHeading')], 'profiles' => $profiles, 'sdkProfile' => $this->ReadPropertyString('SDKColorProfile'), 'colors' => $colors, 'minWidth'  => $min, 'maxWidth' => $max,
-            'cardStyle' => ['scaleContents' => $this->ReadPropertyBoolean('MessageScaleContents'),
-                'borderColor' => sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger('MessageBorderColor')))),
-                'borderWidth' => max(0, min(12, $this->ReadPropertyInteger('MessageBorderWidth'))),
-                'radius' => max(0, min(100, $this->ReadPropertyInteger('MessageRadius'))),
-                'shadow' => $this->ReadPropertyString('MessageShadow')],
-            'fontSize' => max(10, min(30, $this->ReadPropertyInteger('MessageFontSize'))),
-            'metaFontSize' => max(9, min(20, $this->ReadPropertyInteger('MessageMetaFontSize'))),
-            'minHeight' => max(0, min(2000, $this->ReadPropertyInteger('MessageMinHeight'))),
-            'iconSize' => max(24, min(96, $this->ReadPropertyInteger('IconSize')))];
+        return array_merge($this->layoutAppearance(''), ['profiles' => $profiles,
+            'sdkProfile' => $this->ReadPropertyString('SDKColorProfile'), 'colors' => $colors]);
+    }
+
+    private function appearanceColors(string $prefix): array
+    {
+        $colors = [];
+        foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $key => $property) {
+            $colors[$key] = sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger($prefix . $property))));
+        }
+        return $colors;
+    }
+
+    private function layoutAppearance(string $prefix): array
+    {
+        $sizes = ['mini' => [160, 320], 'compact' => [200, 480], 'normal' => [240, 760], 'large' => [280, 1100]];
+        $size = $this->ReadPropertyString($prefix . 'MessageSize');
+        $min = max(120, min(3000, $this->ReadPropertyInteger($prefix . 'MessageMinWidth')));
+        $max = max($min, min(3000, $this->ReadPropertyInteger($prefix . 'MessageMaxWidth')));
+        [$min, $max] = $size === 'custom' ? [$min, $max] : ($sizes[$size] ?? $sizes['normal']);
+        return [
+            'heading' => ['title' => $this->ReadPropertyString($prefix . 'HeadingTitle'), 'visible' => $this->ReadPropertyBoolean($prefix . 'ShowHeading')],
+            'useVariableIcons' => $this->ReadPropertyBoolean($prefix . 'UseVariableIcons'),
+            'minWidth' => $min, 'maxWidth' => $max,
+            'minHeight' => max(0, min(2000, $this->ReadPropertyInteger($prefix . 'MessageMinHeight'))),
+            'fontSize' => max(10, min(30, $this->ReadPropertyInteger($prefix . 'MessageFontSize'))),
+            'metaFontSize' => max(9, min(20, $this->ReadPropertyInteger($prefix . 'MessageMetaFontSize'))),
+            'iconSize' => max(24, min(96, $this->ReadPropertyInteger($prefix . 'IconSize'))),
+            'cardStyle' => ['scaleContents' => $this->ReadPropertyBoolean($prefix . 'MessageScaleContents'),
+                'borderColor' => sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger($prefix . 'MessageBorderColor')))),
+                'borderWidth' => max(0, min(12, $this->ReadPropertyInteger($prefix . 'MessageBorderWidth'))),
+                'radius' => max(0, min(100, $this->ReadPropertyInteger($prefix . 'MessageRadius'))),
+                'shadow' => $this->ReadPropertyString($prefix . 'MessageShadow')]
+        ];
+    }
+
+    private function needsVariableIcons(): bool
+    {
+        if ($this->ReadPropertyBoolean('UseVariableIcons')) {
+            return true;
+        }
+        foreach (['Tile', 'WebFront', 'IPSView'] as $view) {
+            if ($this->ReadPropertyBoolean($view . 'OwnLayout') && $this->ReadPropertyBoolean($view . 'UseVariableIcons')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function UpdateAppearanceEditor(string $View): void
+    {
+        foreach (['common', 'tile', 'webfront', 'ipsview'] as $view) {
+            $this->UpdateFormField('Appearance_' . $view, 'visible', $View === $view);
+        }
     }
 
     private function messagesForVisualization(array $store): array
     {
         $icons = [];
+        $needsIcons = $this->needsVariableIcons();
         foreach ($store['messages'] as &$message) {
             $id = (int) ($message['variableID'] ?? 0);
             if (!array_key_exists($id, $icons)) {
-                $icons[$id] = $this->ReadPropertyBoolean('UseVariableIcons') ? $this->variableIcon($id) : '';
+                $icons[$id] = $needsIcons ? $this->variableIcon($id) : '';
             }
             $message['icon'] = $icons[$id];
         }
@@ -891,6 +933,26 @@ class VisuMessages extends IPSModuleStrict
             }
         }
         unset($section);
+        $editor = $this->ReadPropertyString('AppearanceEditor');
+        if (!in_array($editor, ['common', 'tile', 'webfront', 'ipsview'], true)) {
+            $editor = 'tile';
+        }
+        foreach ($form['elements'] as &$element) {
+            if (($element['caption'] ?? '') === 'Einstellungen') {
+                foreach ($element['items'] as &$panel) {
+                    if (($panel['caption'] ?? '') === 'Darstellung je Visualisierung') {
+                        foreach ($panel['items'] as &$group) {
+                            if (str_starts_with($group['name'] ?? '', 'Appearance_')) {
+                                $group['visible'] = $group['name'] === 'Appearance_' . $editor;
+                            }
+                        }
+                        unset($group);
+                    }
+                }
+                unset($panel);
+            }
+        }
+        unset($element);
         $audioCount = count(IPS_GetInstanceListByModuleID(self::ANNOUNCEMENT_MODULE));
         $visuCount = count(IPS_GetInstanceListByModuleID(self::TILE_MODULE)) + count(IPS_GetInstanceListByModuleID(self::WEBFRONT_MODULE));
         $info = [
