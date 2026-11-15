@@ -1,4 +1,4 @@
-# Visu-Messages · 0.21
+# Visu-Messages · 0.22
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -117,3 +117,24 @@ Die JSON-Liste enthält dieselben sortierten Meldungen wie die Visualisierung, i
 ## Höhe einzelner Meldungen (0.21)
 
 Unter Einstellungen → Darstellung · Symbole und Größe legt „Höhe einer Meldung“ die feste Gesamthöhe der Karte inklusive Symbol, Text, Innenabständen und Schaltflächen fest (0–2000 Pixel). 0 = automatisch. Überlanger Inhalt ist innerhalb der Karte scrollbar. Die Einstellung gilt für alle drei Visualisierungen, unabhängig von der gesamten HTML-Box. Der bisherige Mindesthöhenwert wird als feste Höhe weiterverwendet.
+
+## Kartenlayout (0.22)
+
+„Inhalt an die eingestellte Kartenhöhe anpassen“ skaliert Symbol, Texte, Innenabstände und Schaltflächen proportional zur Höhe (Referenz 132 Pixel, Skalierung begrenzt auf 60–200 Prozent). Bei automatischer Höhe gilt 100 Prozent. Sehr kleine Karten, lange Texte oder schmale Ansichten bleiben scrollbar, damit Bedienelemente erreichbar sind.
+
+Unter Darstellung → Meldungsbox · Rahmen und Schatten liegen Rahmenfarbe, Rahmenstärke (0 = ohne), Eckenradius und Schatten. Diese Vorgaben gelten für alle Ansichten. Der farbige linke Pin-Streifen bleibt eine Zustandsmarkierung.
+
+Eigenes CSS je Visu kann diese Vorgaben überschreiben, beispielsweise:
+
+```css
+:root {
+  --message-border-color: #3899dd;
+  --message-border-width: 2px;
+  --message-radius: 16px;
+  --message-shadow: 0 6px 18px rgba(0,0,0,.3);
+  --message-gap: 12px;
+}
+article .message { font-weight: 600; }
+```
+
+`--message-scale` kann im CSS manuell überschrieben werden. Die automatische Skalierung reagiert auf die Höhen-Einstellung der Instanz; direkte CSS-Regeln für `height` lösen keine zusätzliche automatische Skalierung aus.
