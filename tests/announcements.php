@@ -13,7 +13,7 @@ function IPS_VariableExists($id){return $id===10;}
 function IPS_GetParent($id){return 100;}
 function IPS_GetName($id){return $id===100?'EG | Büro links | Fenster-offen':'Value';}
 function IPS_GetVariable($id){return ['VariableType'=>0];}
-function IPS_InstanceExists($id){return in_array($id,[20,30,40],true);}
+function IPS_InstanceExists($id){return !in_array($id,$GLOBALS['missingInstances']??[],true)&&in_array($id,[20,30,40],true);}
 function IPS_ObjectExists($id){return in_array($id,[1,90],true);}
 function IPS_GetInstanceListByModuleID($id){return $id==='{B5B875BB-9B76-45FD-4E67-2607E45B3AC4}'?[30]:($id==='{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}'?[40]:[]);}
 function VISU_PostNotification($id,$title,$text,$type,$target){$GLOBALS['push'][]=['tile',$id,$title,$text,$target];return ($GLOBALS['pushFail']??false)?false:123;}
@@ -23,7 +23,7 @@ function IPS_SemaphoreEnter($key,$timeout){if($GLOBALS['semaphores'][$key]??fals
 function IPS_SemaphoreLeave($key){$GLOBALS['semaphores'][$key]=false;}
 function DS_Play($device,$text){$GLOBALS['calls'][]=[$device,$text,$GLOBALS['deviceProps']['SonosVolume']??null,$GLOBALS['deviceProps']['MediaPlayerVolume']??null];if(isset($GLOBALS['duringPlay']))($GLOBALS['duringPlay'])();if($GLOBALS['reenter'])$GLOBALS['m']->ProcessAnnouncements();return $GLOBALS['fail']?false:null;}
 class IPSModuleStrict{
- public array $p=[],$a=[],$b=[],$v=[],$timers=[],$logs=[];public int $status=0;protected int $InstanceID=1;
+ public array $p=[],$a=[],$b=[],$v=[],$timers=[],$logs=[],$debug=[];public int $status=0;protected int $InstanceID=1;
  public function Create():void{}public function ApplyChanges():void{}
  public function __call($name,$args){
   if(str_starts_with($name,'RegisterProperty')){$this->p[$args[0]]??=$args[1];return;}
@@ -31,6 +31,7 @@ class IPSModuleStrict{
   if(str_starts_with($name,'ReadProperty'))return $this->p[$args[0]];
   if(str_starts_with($name,'ReadAttribute'))return $this->a[$args[0]];
   if(str_starts_with($name,'WriteAttribute')){$this->a[$args[0]]=$args[1];return;}
+  if($name==='SendDebug'){$this->debug[]=$args;return;}
   if($name==='GetBufferList'||$name==='GetReferenceList')return [];
   if($name==='GetBuffer')return $this->b[$args[0]]??'';
   if($name==='SetBuffer'){$this->b[$args[0]]=$args[1];return;}
@@ -83,9 +84,14 @@ $m=setup(false);pushRule($m);trigger($m);$m->RequestAction('Delete',1);$n=count(
 $m=setup();pushRule($m);trigger($m);$n=count($GLOBALS['push']);$m->ProcessAnnouncements();$m->ProcessAnnouncements();due($m);$m->ProcessAnnouncements();due($m);$m->ProcessAnnouncements();check(count($GLOBALS['push'])===$n+1,'audio repetitions do not repeat push');
 $m=setup();pushRule($m);trigger($m);$GLOBALS['pushFail']=true;$m->ProcessAnnouncements();$GLOBALS['pushFail']=false;$n=count($GLOBALS['calls']);$m->ProcessAnnouncements();check(count($GLOBALS['calls'])===$n+1&&count($m->logs)===1,'push failure preserves independent announcement');
 $m=setup(false);pushRule($m);$r=json_decode($m->p['Rules'],true);$r[0]['PushTitle']=str_repeat('Ä',40);$r[0]['Text']=str_repeat('Ö',300);$m->p['Rules']=json_encode($r);$m->ApplyChanges();trigger($m);$m->ProcessAnnouncements();$last=end($GLOBALS['push']);preg_match_all('/./us',$last[2],$title);preg_match_all('/./us',$last[3],$text);check(count($title[0])===32&&count($text[0])===256,'push limits preserve Unicode characters');check(strlen(json_decode($m->v['MessageData'],true)['messages'][0]['text'])===600,'stored message retains full text');
-$m=setup(false);pushRule($m,20);check($m->status===200,'non-visualization recipient rejected');
+$m=setup(false);pushRule($m,20);trigger($m);check($m->status===102&&$m->v['MessageCount']===1&&$m->a['AnnouncementQueue']==='[]','invalid optional recipient skips push but retains visual message');
 $m=setup(false);$form=json_decode($m->GetConfigurationForm(),true);$section=end($form['elements'][0]['form']);check(count($section['items'][1]['options'])===3,'recipient selector lists tile and WebFront instances');
 
 $m=setup(false);pushRule($m);$r=json_decode($m->p['Rules'],true);$r[0]['PushRepeats']=2;$r[0]['PushInterval']=90;$m->p['Rules']=json_encode($r);$m->ApplyChanges();trigger($m);$before=count($GLOBALS['push']);$m->ProcessAnnouncements();$queue=json_decode($m->a['AnnouncementQueue'],true);check($queue[0]['remaining']===2&&$queue[0]['due']>=time()+89,'push repeats use their own count and 90-second interval');$m->ProcessAnnouncements();check(count($GLOBALS['push'])===$before+1,'push repeat does not run before interval');due($m);$m->ProcessAnnouncements();due($m);$m->ProcessAnnouncements();check(count($GLOBALS['push'])===$before+3&&$m->a['AnnouncementQueue']==='[]','two push repeats produce three total sends and stop');
 $m=setup(false);pushRule($m);$r=json_decode($m->p['Rules'],true);$r[0]['PushRepeats']=101;$m->p['Rules']=json_encode($r);$m->ApplyChanges();check($m->status===200,'excessive push repeat count rejected');
 $m=setup(false);pushRule($m);$r=json_decode($m->p['Rules'],true);$r[0]['PushInterval']=0;$m->p['Rules']=json_encode($r);$m->ApplyChanges();check($m->status===200,'zero push interval rejected');
+
+$GLOBALS['missingInstances']=[20];$m=setup();trigger($m);check($m->status===102&&$m->v['MessageCount']===1&&$m->a['AnnouncementQueue']==='[]','missing announcement instance does not block message rules');check(count(json_decode($m->b['AvailabilityInfo'],true))===1,'missing announcement produces settings hint');
+$GLOBALS['missingInstances']=[30];$m=setup(false);pushRule($m);trigger($m);check($m->status===102&&$m->v['MessageCount']===1&&$m->a['AnnouncementQueue']==='[]','missing push visualization does not block message rules');$GLOBALS['missingInstances']=[];
+$m=setup(false);trigger($m);check($m->debug===[],'debug disabled by default');$m->p['DebugEnabled']=true;$m->ApplyChanges();trigger($m);check(count($m->debug)>0,'debug enabled emits message diagnostics');check(!str_contains(json_encode($m->debug),'Fenster-offen'),'debug metadata does not contain message text');$m->p['DebugEnabled']=false;$m->debug=[];$m->ApplyChanges();trigger($m);check($m->debug===[],'debug can be switched off again');
+$m=setup(false);$m->p['HeadingTitle']='Meine Hinweise';$m->p['ShowHeading']=false;$m->ApplyChanges();$appearance=(new ReflectionMethod($m,'appearance'))->invoke($m);check($appearance['heading']['title']==='Meine Hinweise'&&$appearance['heading']['visible']===false,'heading settings included in visualization appearance');
