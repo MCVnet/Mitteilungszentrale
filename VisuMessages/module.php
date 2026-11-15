@@ -416,7 +416,10 @@ class VisuMessages extends IPSModuleStrict
         if ($this->ReadPropertyBoolean('CustomColors')) {
             $colors = [];
             foreach (['bg' => 'BackgroundColor', 'card' => 'MessageColor', 'text' => 'TextColor', 'accent' => 'AccentColor'] as $key => $property) {
-                $colors[$key] = sprintf('#%06x', max(0, min(0xffffff, $this->ReadPropertyInteger($property))));
+                $value = $this->ReadPropertyInteger($property);
+                $colors[$key] = $key === 'bg' && $value < 0
+                    ? 'transparent'
+                    : sprintf('#%06x', max(0, min(0xffffff, $value)));
             }
         }
         return ['colors' => $colors, 'minWidth' => $min, 'maxWidth' => $max,
