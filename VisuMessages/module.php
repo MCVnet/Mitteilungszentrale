@@ -288,7 +288,9 @@ class VisuMessages extends IPSModuleStrict
                     'source' => IPS_GetName($SenderID), 'variableID' => $SenderID, 'pinned' => false,
                     'announcement' => ['enabled' => $rule['Announce'], 'repeats' => $rule['AnnouncementRepeats'],
                         'interval' => $rule['AnnouncementInterval'],
-                        'volume' => $rule['AnnouncementOwnVolume'] ? $rule['AnnouncementVolume'] : null]
+                        'volume' => $rule['AnnouncementOwnVolume'] ? $rule['AnnouncementVolume'] : null],
+                    'push' => ['enabled' => $rule['PushEnabled'], 'visuID' => $rule['PushVisuID'],
+                        'repeats' => $rule['PushRepeats'], 'interval' => $rule['PushInterval']]
                 ]);
                 if ($rule['PushEnabled'] && $rule['PushAvailable']) {
                     $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
