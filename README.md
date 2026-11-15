@@ -1,4 +1,4 @@
-# Visu-Messages · 0.31
+# Visu-Messages · 0.32
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -204,3 +204,7 @@ Unter Darstellung → Überschrift lässt sich „Meldungen“ durch einen eigen
 Unter Modulvariablen und Daten kann erweitertes Debug eingeschaltet werden. Die Ausgabe erfolgt im Symcon-Debug-Fenster der Instanz; der Schalter öffnet dieses Fenster nicht automatisch. Er protokolliert Meldungs-IDs, Quellvariablen und Ausgabeschritte, nicht Nachrichtentexte oder Zugriffsschlüssel. Warnungen bei Ausgabefehlern bleiben unabhängig davon aktiv.
 
 Unter Optionale Funktionen · Verfügbarkeit wird angezeigt, ob Durchsage-Instanzen und Push-Zielvisualisierungen vorhanden sind. Fehlt ein gewähltes Ziel, wird nur die betreffende optionale Ausgabe übersprungen; gültige Melderegeln erzeugen weiterhin visuelle Meldungen. Nach Einrichtung/Änderung eines Zieles Konfiguration erneut übernehmen. Das separate mehrstufige Modul Benachrichtigung ist nicht erforderlich, da Push direkt über die Visu-API gesendet wird.
+
+## Push-Symbol und Einstellungsreihenfolge (0.32)
+
+Die Farbbereiche stehen in der Reihenfolge Kachelvisu, WebFront, IPSView. Neue Meldungen speichern die Push-Konfiguration im Feld `push` und zeigen bei aktivierter Push-Option ein Glockensymbol am Textende. Der Tooltip enthält Wiederholungsanzahl und Abstand. Wie das Durchsagesymbol zeigt die Glocke eine hinterlegte Konfiguration, keine Zustellbestätigung. Ältere Meldungen ohne Push-Metadaten bleiben unverändert.
