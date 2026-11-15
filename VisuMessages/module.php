@@ -37,6 +37,8 @@ class VisuMessages extends IPSModuleStrict
         $this->RegisterPropertyInteger('MessageMaxWidth', 760);
         $this->RegisterPropertyInteger('MessageMinHeight', 60);
         $this->RegisterPropertyBoolean('MessageScaleContents', true);
+        $this->RegisterPropertyInteger('MessageFontSize', 15);
+        $this->RegisterPropertyInteger('MessageMetaFontSize', 11);
         $this->RegisterPropertyInteger('MessageBorderColor', 0x374652);
         $this->RegisterPropertyInteger('MessageBorderWidth', 1);
         $this->RegisterPropertyInteger('MessageRadius', 12);
@@ -732,6 +734,8 @@ class VisuMessages extends IPSModuleStrict
                 'borderWidth' => max(0, min(12, $this->ReadPropertyInteger('MessageBorderWidth'))),
                 'radius' => max(0, min(100, $this->ReadPropertyInteger('MessageRadius'))),
                 'shadow' => $this->ReadPropertyString('MessageShadow')],
+            'fontSize' => max(10, min(30, $this->ReadPropertyInteger('MessageFontSize'))),
+            'metaFontSize' => max(9, min(20, $this->ReadPropertyInteger('MessageMetaFontSize'))),
             'minHeight' => max(0, min(2000, $this->ReadPropertyInteger('MessageMinHeight'))),
             'iconSize' => max(24, min(96, $this->ReadPropertyInteger('IconSize')))];
     }
