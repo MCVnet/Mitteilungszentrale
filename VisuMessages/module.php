@@ -158,11 +158,23 @@ class VisuMessages extends IPSModuleStrict
 
     public function RequestAction(string $Ident, mixed $Value): void
     {
-        if ($Ident === 'Refresh') {
-            $this->locked(fn() => $this->publish($this->store()));
-            return;
+        $this->SendDebug('Visualization action', json_encode(['action' => $Ident, 'value' => $Value]), 0);
+        try {
+            if ($Ident === 'Refresh') {
+                $this->locked(fn() => $this->publish($this->store()));
+                return;
+            }
+            if ($Ident === 'ClearUnpinned') {
+                if ($Value !== 1) {
+                    throw new InvalidArgumentException('Sammellöschen wurde nicht bestätigt.');
+                }
+                $Ident = 'Clear';
+            }
+            $this->change($Ident, $Value);
+        } catch (Throwable $e) {
+            $this->SendDebug('Visualization error', $e->getMessage(), 0);
+            $this->UpdateVisualizationValue(json_encode(['error' => $e->getMessage()], JSON_THROW_ON_ERROR));
         }
-        $this->change($Ident, $Value);
     }
 
     private function change(string $action, mixed $value): void
