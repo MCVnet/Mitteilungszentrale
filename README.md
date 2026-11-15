@@ -1,4 +1,4 @@
-# Visu-Messages · 0.18
+# Visu-Messages · 0.19
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -99,3 +99,17 @@ Unter „Erweitert · Einbindung“ liegen Symbol-Einbettung, lokaler Webserverp
 ## Instanzaufbau (0.18)
 
 Die Melderegeln stehen zuerst, über die volle Formularbreite und mit 16 sichtbaren Zeilen. Die Variablenspalte ist 420 Pixel breit. Hinweise und Einstellungen sind eingeklappt. Unter Einstellungen liegen Speicher und Begrenzung, Darstellung, die vier Farbbereiche sowie die technische Einbindung getrennt. HTML-Höhe gehört zur Darstellung; das Meldungslimit zu Speicher und Begrenzung.
+
+## Modulvariablen und Daten (0.19)
+
+Unter Einstellungen → Modulvariablen und Daten aktiviert „Modulvariablen und Daten im Objektbaum anzeigen“ die Sichtbarkeit der zusätzlichen Ausgabevariablen unter der Instanz. Nach Änderungen übernehmen werden sie ein- oder ausgeblendet. Standardmäßig sind sie verborgen. Die normale HTML-Meldungsvariable bleibt sichtbar.
+
+| Ident | Inhalt |
+| --- | --- |
+| `URL` | WebView-Adresse inklusive Zugriffsschlüssel |
+| `MessageCount` | Gesamtzahl aller gespeicherten Meldungen |
+| `PinnedCount` | Anzahl angepinnter Meldungen |
+| `UnpinnedCount` | Anzahl nicht angepinnter Meldungen |
+| `MessageData` | JSON mit `version`, `total`, `pinned`, `unpinned`, `messages` |
+
+Die JSON-Liste enthält dieselben sortierten Meldungen wie die Visualisierung, inklusive Symbol. Die Ausgabe wird beim Speichern der Konfiguration und nach Meldungsänderungen aktualisiert, auch wenn sie ausgeblendet ist. Sie ist kein Eingabekanal: Änderungen an den Ausgabevariablen verändern den internen Meldungsspeicher nicht. Der Sichtbarkeitsschalter blendet Daten nur aus und stellt keine Zugriffssperre dar.
