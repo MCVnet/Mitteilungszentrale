@@ -221,7 +221,7 @@ function announcementMark(kind,label){
   const mark=element('span','announcement-mark');mark.setAttribute('role','img');mark.setAttribute('aria-label',label);mark.title=label;
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');
   const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-  path.setAttribute('d',kind==='speaker'?'M11 5 6 9H3v6h3l5 4V5Zm4 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14':'M4 8h13l-3-3m3 3-3 3M20 16H7l3 3m-3-3 3-3');
+  path.setAttribute('d',kind==='bell'?'M6 9a6 6 0 0 1 12 0v6l2 3H4l2-3V9Zm4 12h4':kind==='speaker'?'M11 5 6 9H3v6h3l5 4V5Zm4 3a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14':'M4 8h13l-3-3m3 3-3 3M20 16H7l3 3m-3-3 3-3');
   svg.append(path);mark.append(svg);return mark;
 }
 function render(items) {
@@ -255,6 +255,10 @@ function render(items) {
       const volume=Number.isFinite(a.volume)?' · Lautstärke '+a.volume+' %':'';
       message.append(announcementMark('speaker','Durchsage hinterlegt'+volume));
       if(Number(a.repeats)>0)message.append(announcementMark('repeat',a.repeats+' zusätzliche Wiederholungen · Abstand '+a.interval+' Sekunden'));
+    }
+    if(m.push&&m.push.enabled){
+      const detail=Number(m.push.repeats)>0?' · '+m.push.repeats+' zusätzliche Wiederholungen · Abstand '+m.push.interval+' Sekunden':'';
+      message.append(announcementMark('bell','Push-Benachrichtigung hinterlegt'+detail));
     }
     content.append(meta,message);
     const actions=element('div','actions');
