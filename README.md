@@ -1,4 +1,4 @@
-# Visu-Messages · 0.8
+# Visu-Messages · 0.9
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -48,6 +48,7 @@ Platzhalter: `{name}` Variablenname, `{value}` neuer Rohwert, `{old}` alter Rohw
 Unter **Darstellung: Symbole, Farben und Breite** sind alle Optionen hinterlegt:
 
 - **Symbole der Variablen übernehmen:** links vor jeder Meldung, vertikal zentriert. Vorrang hat das eigene Objektsymbol; andernfalls wird das Symbol der Variablendarstellung bzw. des Profils verwendet. Ohne Symbol erscheint ein Brief. Auch vorhandene Meldungen erhalten das aktuelle Quellsymbol. Bei deaktivierter Option wird immer der Brief angezeigt.
+- **Symbolgröße:** standardmäßig 48 Pixel, einstellbar von 24 bis 96 Pixel. Auf sehr schmalen Displays wird die Größe auf höchstens 48 Pixel begrenzt. Ein hinterlegtes, aber nicht ladbares Symbol wird mit „?“ gekennzeichnet und nicht durch einen Brief ersetzt.
 - **Eigene Farben verwenden:** aktiviert die vier Farbfelder für Ansichtshintergrund, Meldungshintergrund, Schrift und Akzent. Die Akzentfarbe wird für Symbole und „Angepinnt“ verwendet. Ohne eigene Farben folgt die Ansicht dem hellen/dunklen Modus des Clients.
 - **Breite:** Mini (max. 320 px), Kompakt (480 px), Normal (760 px), Groß (1100 px) oder Benutzerdefiniert mit Mindest-/Maximalbreite. Auf schmaleren Displays bleibt die Darstellung innerhalb der verfügbaren Breite. Die Werte beziehen sich auf CSS-Pixel der jeweiligen Webansicht, nicht auf physische Bildschirm-Pixel.
 
