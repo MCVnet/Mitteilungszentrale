@@ -1,4 +1,4 @@
-# Visu-Messages · 0.22
+# Visu-Messages · 0.23
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -138,3 +138,9 @@ article .message { font-weight: 600; }
 ```
 
 `--message-scale` kann im CSS manuell überschrieben werden. Die automatische Skalierung reagiert auf die Höhen-Einstellung der Instanz; direkte CSS-Regeln für `height` lösen keine zusätzliche automatische Skalierung aus.
+
+## Kompakte Meldungen und mehr Regelplatz (0.23)
+
+Neue Instanzen verwenden 60 Pixel Kartenhöhe. Bereits gespeicherte Höhen bleiben erhalten; für bestehende Instanzen die Höhe auf 60 setzen. Bis einschließlich 90 Pixel gilt das kompakte Layout: Symbol links, Metadaten/Text in der Mitte, Bedienelemente rechts. Auf schmalen Displays werden die Schaltflächen als Symbole mit zugänglichen Beschriftungen dargestellt. Lange Inhalte bleiben scrollbar.
+
+Die Skalierung verwendet im kompakten Layout 60 Pixel als Referenz, darüber das bisherige 132-Pixel-Layout. Der Regelbereich zeigt jetzt 24 Zeilen, die Variablenspalte ist 480 Pixel breit.
