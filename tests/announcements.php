@@ -97,3 +97,9 @@ $m=setup(false);trigger($m);check($m->debug===[],'debug disabled by default');$m
 $m=setup(false);$m->p['HeadingTitle']='Meine Hinweise';$m->p['ShowHeading']=false;$m->ApplyChanges();$appearance=(new ReflectionMethod($m,'appearance'))->invoke($m);check($appearance['heading']['title']==='Meine Hinweise'&&$appearance['heading']['visible']===false,'heading settings included in visualization appearance');
 
 $m=setup(false);pushRule($m);trigger($m);$snapshot=json_decode($m->v['MessageData'],true)['messages'][0];check($snapshot['push']['enabled']===true&&$snapshot['push']['visuID']===30,'message snapshot retains push metadata for icon');
+
+$priorityItems=[['id'=>1,'time'=>10,'pinned'=>true,'priority'=>3],['id'=>2,'time'=>20,'pinned'=>true,'priority'=>1],['id'=>3,'time'=>30,'pinned'=>false,'priority'=>1],['id'=>4,'time'=>40,'pinned'=>false,'priority'=>1],['id'=>5,'time'=>60,'pinned'=>false,'priority'=>2],['id'=>6,'time'=>100,'pinned'=>false]];
+check(array_column(VisuMessagesRules::sorted($priorityItems),'id')===[2,1,4,3,5,6],'priority sort: pins then red yellow normal; newest within groups');
+check(array_column(VisuMessagesRules::sorted($priorityItems,'date'),'id')===[2,1,6,5,4,3],'date sort preserves pins first');
+$m=setup(false);$r=json_decode($m->p['Rules'],true);$r[0]['Priority']=1;$m->p['Rules']=json_encode($r);$m->ApplyChanges();trigger($m);check(json_decode($m->v['MessageData'],true)['messages'][0]['priority']===1,'new message stores configured priority');
+$m=setup(false);$r=json_decode($m->p['Rules'],true);$r[0]['Priority']=0;$m->p['Rules']=json_encode($r);$m->ApplyChanges();check($m->status===200,'invalid priority rejected');
