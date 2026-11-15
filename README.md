@@ -1,4 +1,4 @@
-# Visu-Messages · 0.29
+# Visu-Messages · 0.30
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -190,3 +190,9 @@ API-Dokumentation: https://www.symcon.de/de/service/dokumentation/modulreferenz/
 Durchsage und Push sind im Regeleditor standardmäßig eingeklappt. Der Nachrichtentext hat einen eigenen offenen Bereich mit mehrzeiligem Eingabefeld und Platzhalterhilfe.
 
 Push besitzt nun eine unabhängige Zahl zusätzlicher Wiederholungen (0–100) und einen Abstand (1–86400 Sekunden). 0 = einmalig; 2 = drei Ausgaben insgesamt. Bestehende Regeln erhalten 0 Wiederholungen und 60 Sekunden Abstand. Nach einem Versandfehler werden die weiteren Push-Ausgaben dieser Meldung abgebrochen; Durchsagen bleiben davon unabhängig. Die tatsächliche Zustellzeit kann durch den Push-Dienst verzögert sein.
+
+## Aufgeräumte Darstellung und Mini (0.30)
+
+Darstellung ist in Kartenformat, Schrift und Symbole, Rahmen/Schatten sowie HTML-Box getrennt. Benutzerdefinierte Breiten liegen eingeklappt beim Kartenformat. Meldungstext (10–30 px) und Zeit/Quelle (9–20 px) sind getrennt konfigurierbar. Mit aktivierter Inhaltsskalierung werden die eingestellten Größen zusätzlich mit der Kartenhöhe skaliert.
+
+Die Mini-Darstellung richtet sich nach der tatsächlichen Kartenbreite (bis 420 px), nicht mehr nur nach dem Browserfenster. Kleine Karten verwenden Symbol-Schaltflächen, eine kurze Zeitzeile mit Quelle und bis zu zwei Textzeilen. Vollständiges Datum/Quelle stehen im Tooltip. Antippen des Nachrichtentexts oder Enter/Leertaste klappt die Meldung vollständig auf und wieder zu. Bei großer Schrift dürfen schmale Karten über die eingestellte Höhe hinauswachsen, damit Inhalte und Bedienung lesbar bleiben.
