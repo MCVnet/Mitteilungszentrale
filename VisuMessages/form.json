@@ -230,12 +230,81 @@
               "caption": "Feste Gesamthöhe jeder Meldung einschließlich Symbol, Text und Schaltflächen. 0 = automatische Höhe. Bei wenig Platz lässt sich innerhalb der Meldung scrollen."
             },
             {
+              "type": "CheckBox",
+              "name": "MessageScaleContents",
+              "caption": "Inhalt an die eingestellte Kartenhöhe anpassen"
+            },
+            {
               "type": "NumberSpinner",
               "name": "Height",
               "caption": "HTML-Box: Höhe (Pixel)",
               "minimum": 200,
               "maximum": 2000,
               "width": "220px"
+            },
+            {
+              "type": "ExpansionPanel",
+              "caption": "Meldungsbox · Rahmen und Schatten",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "RowLayout",
+                  "items": [
+                    {
+                      "type": "SelectColor",
+                      "name": "MessageBorderColor",
+                      "caption": "Rahmenfarbe",
+                      "allowTransparent": false,
+                      "width": "260px"
+                    },
+                    {
+                      "type": "NumberSpinner",
+                      "name": "MessageBorderWidth",
+                      "caption": "Rahmenstärke (Pixel)",
+                      "minimum": 0,
+                      "maximum": 12,
+                      "width": "200px"
+                    }
+                  ]
+                },
+                {
+                  "type": "RowLayout",
+                  "items": [
+                    {
+                      "type": "NumberSpinner",
+                      "name": "MessageRadius",
+                      "caption": "Eckenradius (Pixel)",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "width": "200px"
+                    },
+                    {
+                      "type": "Select",
+                      "name": "MessageShadow",
+                      "caption": "Schatten",
+                      "width": "260px",
+                      "options": [
+                        {
+                          "caption": "Kein Schatten",
+                          "value": "none"
+                        },
+                        {
+                          "caption": "Dezent",
+                          "value": "soft"
+                        },
+                        {
+                          "caption": "Mittel",
+                          "value": "medium"
+                        },
+                        {
+                          "caption": "Kräftig",
+                          "value": "strong"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
