@@ -27,7 +27,7 @@ article{display:grid;grid-template-columns:var(--icon-size,48px) minmax(0,1fr);c
 </div>
 <section id="list" aria-label="Meldungsliste"></section>
 <div id="status" role="status" aria-live="polite"></div>
-<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.12</div>
+<div class="note">Angepinnte Meldungen bleiben oben und werden beim Sammellöschen erhalten. · Visu-Messages 0.13</div>
 </main>
 <script>
 'use strict';
@@ -76,6 +76,16 @@ function drawMessageIcon(box){
   const raw=box.dataset.icon||'';
   if(!raw){box.replaceChildren(envelope());return;}
   if(iconCache.has(raw)){box.replaceChildren(iconCache.get(raw).cloneNode(true));return;}
+  const tuple=(config.iconDefinitions||{})[raw];
+  if(tuple){
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+tuple[0]+' '+tuple[1]);svg.setAttribute('data-icon',raw);
+    for(const data of Array.isArray(tuple[4])?tuple[4]:[tuple[4]]){
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('fill','currentColor');path.setAttribute('d',data);svg.append(path);
+    }
+    iconCache.set(raw,svg.cloneNode(true));box.replaceChildren(svg);return;
+  }
   box.replaceChildren();box.textContent='…';box.title='Symbol wird geladen: '+raw;
   if(!/^[A-Za-z0-9 _-]{1,160}$/.test(raw)){box.textContent='?';return;}
   const words=raw.split(/\s+/);
@@ -107,6 +117,7 @@ function messageIcon(raw){
   drawMessageIcon(box);return box;
 }
 function loadIconLibrary(){
+  if(config.mode==='sdk'&&config.iconDefinitions)return;
   if(window.FontAwesome){iconLibrary=window.FontAwesome;return;}
   // Insert explicitly: embedded SDK clients do not consistently execute deferred script tags.
   const script=document.createElement('script');script.async=true;script.src=config.iconScriptURL||'/icons.js';
