@@ -12,7 +12,8 @@ function IPS_GetKernelRunlevel(){return KR_READY;}
 function IPS_VariableExists($id){return $id===10;}
 function IPS_GetParent($id){return 100;}
 function IPS_GetName($id){return $id===100?'EG | Büro links | Fenster-offen':'Value';}
-function IPS_GetVariable($id){return ['VariableType'=>0];}
+function IPS_GetVariable($id){return ['VariableType'=>0,'VariableCustomProfile'=>'','VariableProfile'=>''];}
+function IPS_GetObject($id){return ['ObjectIcon'=>'window'];}
 function IPS_InstanceExists($id){return !in_array($id,$GLOBALS['missingInstances']??[],true)&&in_array($id,[20,30,40],true);}
 function IPS_ObjectExists($id){return in_array($id,[1,90],true);}
 function IPS_GetInstanceListByModuleID($id){return $id==='{B5B875BB-9B76-45FD-4E67-2607E45B3AC4}'?[30]:($id==='{3565B1F2-8F7B-4311-A4B6-1BF1D868F39E}'?[40]:[]);}
@@ -103,3 +104,6 @@ check(array_column(VisuMessagesRules::sorted($priorityItems),'id')===[2,1,4,3,5,
 check(array_column(VisuMessagesRules::sorted($priorityItems,'date'),'id')===[2,1,6,5,4,3],'date sort preserves pins first');
 $m=setup(false);$r=json_decode($m->p['Rules'],true);$r[0]['Priority']=1;$m->p['Rules']=json_encode($r);$m->ApplyChanges();trigger($m);check(json_decode($m->v['MessageData'],true)['messages'][0]['priority']===1,'new message stores configured priority');
 $m=setup(false);$r=json_decode($m->p['Rules'],true);$r[0]['Priority']=0;$m->p['Rules']=json_encode($r);$m->ApplyChanges();check($m->status===200,'invalid priority rejected');
+
+$m=setup(false);$m->p['TileOwnLayout']=true;$m->p['TileMessageSize']='mini';$m->p['TileMessageMinHeight']=90;$m->p['TileMessageFontSize']=18;$m->ApplyChanges();$a=(new ReflectionMethod($m,'appearance'))->invoke($m);check($a['profiles']['tile']['layout']['maxWidth']===320&&$a['profiles']['tile']['layout']['minHeight']===90&&$a['profiles']['tile']['layout']['fontSize']===18,'tile layout has independent dimensions and font');check($a['maxWidth']===760&&$a['profiles']['webfront']['layout']===null&&$a['profiles']['ipsview']['layout']===null,'other visualizations inherit unchanged common layout');trigger($m);check(json_decode($m->v['MessageData'],true)['messages'][0]['icon']==='window','source icons remain available for a profile that enables them');$m->p['TileOwnLayout']=false;$m->ApplyChanges();$a=(new ReflectionMethod($m,'appearance'))->invoke($m);check($a['profiles']['tile']['layout']===null,'disabling own layout restores common inheritance');
+$m=setup(false);$form=json_decode($m->GetConfigurationForm(),true);$settings=array_values(array_filter($form['elements'],fn($e)=>($e['caption']??'')==='Einstellungen'))[0];$display=array_values(array_filter($settings['items'],fn($e)=>($e['caption']??'')==='Darstellung je Visualisierung'))[0];$visible=array_column(array_filter($display['items'],fn($e)=>str_starts_with($e['name']??'','Appearance_')&&($e['visible']??false)),'name');check($visible===['Appearance_tile'],'editor shows only the selected visualization settings');
