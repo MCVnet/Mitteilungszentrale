@@ -64,7 +64,7 @@ article.expanded{height:auto!important;overflow:visible}
 article.expanded .message{display:block!important;-webkit-line-clamp:unset;overflow:visible}
 .message[role="button"]{cursor:pointer}.message[role="button"]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 article.narrow .announcement-mark{margin-left:4px;width:1.15em;height:1.15em}
-</style></head>
+</style><style>header.no-heading{justify-content:flex-end}main.narrow header.no-heading .count{grid-column:1 / -1;text-align:right}</style></head>
 <body><main>
 <header><h1>Meldungen</h1><span id="count" class="count"></span><button id="clear" type="button">Nicht angepinnte löschen</button></header>
 <div id="clearConfirmation" hidden role="group" aria-label="Sammellöschen bestätigen" style="margin-bottom:16px">
@@ -107,6 +107,11 @@ let layoutStyle=null;
 function applyAppearance(appearance){
   if(!appearance)return;
   const root=document.documentElement;
+  const heading=document.querySelector('header h1');
+  const title=typeof appearance.heading?.title==='string'?appearance.heading.title:'Meldungen';
+  heading.textContent=title;
+  heading.hidden=appearance.heading?.visible===false||title.trim()==='';
+  heading.parentElement.classList.toggle('no-heading',heading.hidden);
   const profile=colorProfile(appearance);
   root.dataset.visu=profile;
   const selected=appearance.profiles&&appearance.profiles[profile];
