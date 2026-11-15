@@ -124,6 +124,34 @@
           "visible": false,
           "save": true,
           "add": 50
+        },
+        {
+          "name": "PushEnabled",
+          "caption": "PushEnabled",
+          "visible": false,
+          "save": true,
+          "add": false
+        },
+        {
+          "name": "PushVisuID",
+          "caption": "PushVisuID",
+          "visible": false,
+          "save": true,
+          "add": 0
+        },
+        {
+          "name": "PushTitle",
+          "caption": "PushTitle",
+          "visible": false,
+          "save": true,
+          "add": "Visu-Messages"
+        },
+        {
+          "name": "PushTargetID",
+          "caption": "PushTargetID",
+          "visible": false,
+          "save": true,
+          "add": 0
         }
       ],
       "width": "100%",
@@ -235,6 +263,46 @@
             {
               "type": "Label",
               "caption": "Die erste Ausgabe startet nach dem Erstellen der Meldung. Wiederholungen sind zusätzliche Ausgaben; 2 bedeutet insgesamt 3 Durchsagen. Gerät und Lautstärke werden in der gewählten Durchsage-Instanz eingerichtet. Löschen der Meldung beendet offene Wiederholungen. Speichern der Konfiguration oder ein Neustart verwirft offene Durchsagen."
+            }
+          ]
+        },
+        {
+          "type": "ExpansionPanel",
+          "caption": "Push-Benachrichtigung",
+          "expanded": true,
+          "items": [
+            {
+              "type": "CheckBox",
+              "name": "PushEnabled",
+              "caption": "Meldung als Push an eine Visualisierung senden"
+            },
+            {
+              "type": "Select",
+              "name": "PushVisuID",
+              "caption": "Ziel-Visualisierung",
+              "width": "100%",
+              "options": [
+                {
+                  "caption": "Bitte auswählen",
+                  "value": 0
+                }
+              ]
+            },
+            {
+              "type": "ValidationTextBox",
+              "name": "PushTitle",
+              "caption": "Push-Titel (maximal 32 Zeichen)",
+              "width": "100%"
+            },
+            {
+              "type": "SelectObject",
+              "name": "PushTargetID",
+              "caption": "Beim Antippen öffnen (0 = diese Visu-Messages-Instanz)",
+              "width": "100%"
+            },
+            {
+              "type": "Label",
+              "caption": "Einmaliger Push mit dem aktuellen Meldungstext (maximal 256 Zeichen). Unterstützt Kachelvisu und WebFront mit registrierten Mobilgeräten. Das Sprungziel muss in der gewählten Visu verfügbar sein. Durchsage-Wiederholungen erzeugen keine zusätzlichen Push-Nachrichten."
             }
           ]
         }
