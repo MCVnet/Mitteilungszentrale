@@ -1,4 +1,4 @@
-# Visu-Messages · 0.33
+# Visu-Messages · 0.34
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -216,3 +216,11 @@ Jede Melderegel hat Priorität 1 (hohes Gewicht, rotes Variablensymbol), 2 (mitt
 Oben lässt sich zwischen Priorität (Standard) und Datum wechseln. Angepinnte Meldungen stehen immer zuerst und sind untereinander nach Datum sortiert. Bei Priorität folgen danach 1, 2, 3, innerhalb jeder Stufe neueste zuerst. Bei Datum gilt neueste zuerst ohne Prioritätsgruppen. Die Auswahl wird, soweit der Client lokalen Speicher unterstützt, pro Instanz und Ansichtsart gemerkt. JSON-Ausgaben sind standardmäßig nach Priorität sortiert.
 
 Die neuen Farben betreffen das linke Variablensymbol, nicht Durchsage-/Push-Symbole. Individuelles CSS kann `--priority-1-color` und `--priority-2-color` überschreiben. Das Speicherlimit entfernt weiterhin die ältesten normalen Meldungen unabhängig von der Anzeigesortierung.
+
+## Eigene Darstellung je Visualisierung (0.34)
+
+Unter Einstellungen → Darstellung je Visualisierung wird zuerst der zu bearbeitende Bereich gewählt: Gemeinsame Vorgabe, Kachelvisu, WebFront oder IPSView. Nur dessen Formular ist sichtbar. Diese Auswahl ändert nur den Editor, nicht die Zuordnung der laufenden Clients.
+
+„Eigene Darstellung für … verwenden“ aktiviert unabhängige Kartenbreite/-höhe, Schriftgrößen, Symbolgröße/-verwendung, Inhaltsskalierung, Überschrift sowie Rahmen/Schatten. Ohne Aktivierung gelten die bisherigen gemeinsamen Werte. Beim erstmaligen Anlegen der neuen Eigenschaften werden die gemeinsamen Werte als Ausgangswerte übernommen. Bestehende Farben und CSS bleiben erhalten und werden je Ansicht separat verwaltet. Die Höhe der gesamten HTML-Box bleibt eine gemeinsame Einstellung.
+
+Beispiel: Kachelvisu wählen, eigene Darstellung aktivieren und Mini/80 px/16 px Text setzen. WebFront und IPSView behalten ihre bisherigen Werte, solange dort keine eigene Darstellung aktiviert ist. Die bestehende SDK-Profilzuordnung gilt weiterhin; eine erzwungene SDK-Auswahl überschreibt beide SDK-Clients dieser Instanz.
