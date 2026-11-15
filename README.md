@@ -1,4 +1,4 @@
-# Visu-Messages · 0.19
+# Visu-Messages · 0.20
 
 Ein IP-Symcon-Modul für Symcon ab 9.0. Es sammelt frei formulierte Meldungen bei konfigurierbaren Variablenbedingungen und stellt eine gemeinsame Liste für Kachelvisualisierung, WebFront und IPSView bereit.
 
@@ -113,3 +113,7 @@ Unter Einstellungen → Modulvariablen und Daten aktiviert „Modulvariablen und
 | `MessageData` | JSON mit `version`, `total`, `pinned`, `unpinned`, `messages` |
 
 Die JSON-Liste enthält dieselben sortierten Meldungen wie die Visualisierung, inklusive Symbol. Die Ausgabe wird beim Speichern der Konfiguration und nach Meldungsänderungen aktualisiert, auch wenn sie ausgeblendet ist. Sie ist kein Eingabekanal: Änderungen an den Ausgabevariablen verändern den internen Meldungsspeicher nicht. Der Sichtbarkeitsschalter blendet Daten nur aus und stellt keine Zugriffssperre dar.
+
+## Höhe einzelner Meldungen (0.20)
+
+Unter Einstellungen → Darstellung · Symbole und Größe kann die Mindesthöhe jeder Meldung von 0 bis 2000 Pixel gesetzt werden. 0 behält die automatische Höhe bei. Lange Texte, Symbole und Bedienelemente werden nicht abgeschnitten und dürfen die Karte vergrößern. Die Einstellung gilt für alle drei Visualisierungen und wird über die normalen Aktualisierungen übernommen. Sie ist unabhängig von der Höhe der gesamten HTML-Box.
