@@ -71,7 +71,7 @@ class VisuMessages extends IPSModuleStrict
                 if (!is_array($rule)) {
                     continue;
                 }
-                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60] as $field => $default) {
+                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50] as $field => $default) {
                     if (!array_key_exists($field, $rule)) {
                         $rule[$field] = $default;
                         $changed = true;
@@ -190,7 +190,12 @@ class VisuMessages extends IPSModuleStrict
             $rule['AnnouncementID'] = (int) ($rule['AnnouncementID'] ?? 0);
             $rule['AnnouncementRepeats'] = (int) ($rule['AnnouncementRepeats'] ?? 0);
             $rule['AnnouncementInterval'] = (int) ($rule['AnnouncementInterval'] ?? 60);
+            $rule['AnnouncementOwnVolume'] = (bool) ($rule['AnnouncementOwnVolume'] ?? false);
+            $rule['AnnouncementVolume'] = (int) ($rule['AnnouncementVolume'] ?? 50);
             if ($rule['Announce']) {
+                if ($rule['AnnouncementOwnVolume'] && ($rule['AnnouncementVolume'] < 1 || $rule['AnnouncementVolume'] > 100)) {
+                    throw new InvalidArgumentException('Regel ' . ($index + 1) . ': Durchsage-Lautstärke muss zwischen 1 und 100 Prozent liegen.');
+                }
                 $device = $rule['AnnouncementID'];
                 if (!IPS_InstanceExists($device) || IPS_GetInstance($device)['ModuleInfo']['ModuleID'] !== self::ANNOUNCEMENT_MODULE) {
                     throw new InvalidArgumentException('Regel ' . ($index + 1) . ': gültige Durchsage-Instanz auswählen.');
@@ -241,12 +246,16 @@ class VisuMessages extends IPSModuleStrict
                 $messageID = $store['next']++;
                 array_unshift($store['messages'], [
                     'id' => $messageID, 'time' => time(), 'text' => $text,
-                    'source' => IPS_GetName($SenderID), 'variableID' => $SenderID, 'pinned' => false
+                    'source' => IPS_GetName($SenderID), 'variableID' => $SenderID, 'pinned' => false,
+                    'announcement' => ['enabled' => $rule['Announce'], 'repeats' => $rule['AnnouncementRepeats'],
+                        'interval' => $rule['AnnouncementInterval'],
+                        'volume' => $rule['AnnouncementOwnVolume'] ? $rule['AnnouncementVolume'] : null]
                 ]);
                 if ($rule['Announce']) {
                     $queue = json_decode($this->ReadAttributeString('AnnouncementQueue'), true, 512, JSON_THROW_ON_ERROR);
                     $queue[] = ['messageID' => $messageID, 'device' => $rule['AnnouncementID'], 'text' => $text,
                         'remaining' => 1 + $rule['AnnouncementRepeats'], 'interval' => $rule['AnnouncementInterval'],
+                        'volume' => $rule['AnnouncementOwnVolume'] ? $rule['AnnouncementVolume'] : null,
                         'due' => time(), 'ruleKey' => $rule['AnnouncementKey'],
                         'generation' => $this->ReadAttributeInteger('AnnouncementGeneration')];
                     $this->writeAnnouncementQueue($queue);
@@ -290,7 +299,7 @@ class VisuMessages extends IPSModuleStrict
                     throw new RuntimeException('Durchsage-Instanz ist nicht betriebsbereit.');
                 }
                 // The current official module returns void on success; older releases may return bool.
-                if (DS_Play($job['device'], $job['text']) === false) {
+                if ($this->playAnnouncement($job) === false) {
                     throw new RuntimeException('Durchsage wurde vom Modul abgelehnt.');
                 }
                 $this->locked(function () use ($job): void {
@@ -308,6 +317,49 @@ class VisuMessages extends IPSModuleStrict
             }
         } finally {
             IPS_SemaphoreLeave($worker);
+        }
+    }
+
+    private function playAnnouncement(array $job): mixed
+    {
+        $device = $job['device'];
+        $lock = 'Visu-Messages.Durchsage.' . $device;
+        if (!IPS_SemaphoreEnter($lock, 1000)) {
+            throw new RuntimeException('Durchsage-Gerät wird bereits verwendet.');
+        }
+        $changed = false;
+        $property = '';
+        $original = null;
+        $requested = null;
+        try {
+            if (($job['volume'] ?? null) !== null) {
+                if (IPS_HasChanges($device)) {
+                    throw new RuntimeException('Durchsage-Instanz hat ungespeicherte Änderungen; Lautstärke wurde nicht geändert.');
+                }
+                $output = IPS_GetProperty($device, 'OutputType');
+                if (!in_array($output, [0, 1], true)) {
+                    throw new RuntimeException('Ausgabetyp der Durchsage-Instanz wird nicht unterstützt.');
+                }
+                $property = $output === 0 ? 'SonosVolume' : 'MediaPlayerVolume';
+                $requested = $output === 0 ? (string) $job['volume'] : (int) $job['volume'];
+                $original = IPS_GetProperty($device, $property);
+                if ($original !== $requested) {
+                    // DS_Play has no volume parameter. Override its setting only for this call.
+                    IPS_SetProperty($device, $property, $requested);
+                    $changed = true;
+                    IPS_ApplyChanges($device);
+                }
+            }
+            return DS_Play($device, $job['text']);
+        } finally {
+            try {
+                if ($changed && IPS_InstanceExists($device) && IPS_GetProperty($device, $property) === $requested) {
+                    IPS_SetProperty($device, $property, $original);
+                    IPS_ApplyChanges($device);
+                }
+            } finally {
+                IPS_SemaphoreLeave($lock);
+            }
         }
     }
 
