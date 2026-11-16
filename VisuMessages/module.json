@@ -2,13 +2,14 @@
   "id": "{C13DA055-AF58-4504-A084-C5355DB865A0}",
   "name": "VisuMessages",
   "type": 3,
-  "vendor": "Visu-Messages",
+  "vendor": "Mitteilungszentrale",
   "aliases": [
+    "Mitteilungszentrale",
     "Visu-Messages"
   ],
   "parentRequirements": [],
   "childRequirements": [],
   "implemented": [],
   "prefix": "VMMSG",
-  "url": "https://github.com/MCVnet/Symcon-Visu-Messages"
+  "url": "https://github.com/MCVnet/Mitteilungszentrale"
 }

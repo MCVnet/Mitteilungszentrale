@@ -81,6 +81,9 @@ class VisuMessages extends IPSModuleStrict
     public function ApplyChanges(): void
     {
         parent::ApplyChanges();
+        if (in_array(IPS_GetName($this->InstanceID), ['Visu-Messages', 'VisuMessages'], true)) {
+            IPS_SetName($this->InstanceID, 'Mitteilungszentrale');
+        }
         $this->registerDataVariables();
         // Replace previously cleared colors with the original solid defaults once.
         $normalized = false;
@@ -91,7 +94,11 @@ class VisuMessages extends IPSModuleStrict
                 if (!is_array($rule)) {
                     continue;
                 }
-                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50, 'PushEnabled' => false, 'PushVisuID' => 0, 'PushTitle' => 'Visu-Messages', 'PushTargetID' => 0, 'PushRepeats' => 0, 'PushInterval' => 60, 'Priority' => 3] as $field => $default) {
+                if (($rule['PushTitle'] ?? '') === 'Visu-Messages') {
+                    $rule['PushTitle'] = 'Mitteilungszentrale';
+                    $changed = true;
+                }
+                foreach (['Announce' => false, 'AnnouncementID' => 0, 'AnnouncementRepeats' => 0, 'AnnouncementInterval' => 60, 'AnnouncementOwnVolume' => false, 'AnnouncementVolume' => 50, 'PushEnabled' => false, 'PushVisuID' => 0, 'PushTitle' => 'Mitteilungszentrale', 'PushTargetID' => 0, 'PushRepeats' => 0, 'PushInterval' => 60, 'Priority' => 3] as $field => $default) {
                     if (!array_key_exists($field, $rule)) {
                         $rule[$field] = $default;
                         $changed = true;
@@ -242,7 +249,7 @@ class VisuMessages extends IPSModuleStrict
             }
             $rule['PushEnabled'] = (bool) ($rule['PushEnabled'] ?? false);
             $rule['PushVisuID'] = (int) ($rule['PushVisuID'] ?? 0);
-            $rule['PushTitle'] = (string) ($rule['PushTitle'] ?? 'Visu-Messages');
+            $rule['PushTitle'] = (string) ($rule['PushTitle'] ?? 'Mitteilungszentrale');
             $rule['PushTargetID'] = (int) ($rule['PushTargetID'] ?? 0);
             $rule['PushRepeats'] = (int) ($rule['PushRepeats'] ?? 0);
             $rule['PushInterval'] = (int) ($rule['PushInterval'] ?? 60);
@@ -562,7 +569,7 @@ class VisuMessages extends IPSModuleStrict
         $this->locked(function (): void {
             $store = $this->store();
             array_unshift($store['messages'], [
-                'id' => $store['next']++, 'time' => time(), 'text' => 'Die Visu-Messages ist bereit.',
+                'id' => $store['next']++, 'time' => time(), 'text' => 'Die Mitteilungszentrale ist bereit.',
                 'source' => 'Testmeldung', 'variableID' => 0, 'pinned' => false
             ]);
             $store['messages'] = VisuMessagesRules::trim($store['messages'], max(1, $this->ReadPropertyInteger('Limit')));
@@ -863,7 +870,7 @@ class VisuMessages extends IPSModuleStrict
         $url = rtrim($this->ReadPropertyString('BaseURL'), '/') . $path;
         $this->SetValue('URL', $url);
         $height = max(200, min(2000, $this->ReadPropertyInteger('Height')));
-        $this->SetValue('HTML', '<iframe title="Visu-Messages" referrerpolicy="no-referrer" src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" style="width:100%;height:' . $height . 'px;border:0"></iframe>');
+        $this->SetValue('HTML', '<iframe title="Mitteilungszentrale" referrerpolicy="no-referrer" src="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" style="width:100%;height:' . $height . 'px;border:0"></iframe>');
     }
 
     private function store(): array
@@ -905,7 +912,7 @@ class VisuMessages extends IPSModuleStrict
     {
         $name = 'Visu-Messages.' . $this->InstanceID;
         if (!IPS_SemaphoreEnter($name, 5000)) {
-            throw new RuntimeException('Visu-Messages beschäftigt. Bitte erneut versuchen.');
+            throw new RuntimeException('Mitteilungszentrale beschäftigt. Bitte erneut versuchen.');
         }
         try {
             $callback();

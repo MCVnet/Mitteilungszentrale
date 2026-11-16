@@ -167,7 +167,7 @@
           "caption": "PushTitle",
           "visible": false,
           "save": true,
-          "add": "Visu-Messages"
+          "add": "Mitteilungszentrale"
         },
         {
           "name": "PushTargetID",
@@ -378,7 +378,7 @@
             {
               "type": "SelectObject",
               "name": "PushTargetID",
-              "caption": "Beim Antippen öffnen (0 = diese Visu-Messages-Instanz)",
+              "caption": "Beim Antippen öffnen (0 = diese Mitteilungszentrale-Instanz)",
               "width": "100%"
             },
             {

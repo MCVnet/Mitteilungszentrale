@@ -11,7 +11,8 @@ function IPS_ApplyChanges($id){if($id!==20)$GLOBALS['m']->ApplyChanges();}
 function IPS_GetKernelRunlevel(){return KR_READY;}
 function IPS_VariableExists($id){return $id===10;}
 function IPS_GetParent($id){return 100;}
-function IPS_GetName($id){return $id===100?'EG | Büro links | Fenster-offen':'Value';}
+function IPS_GetName($id){return $id===100?'EG | Büro links | Fenster-offen':($id===1?($GLOBALS['instanceName']??'Value'):'Value');}
+function IPS_SetName($id,$name){$GLOBALS['instanceName']=$name;}
 function IPS_GetVariable($id){return ['VariableType'=>0,'VariableCustomProfile'=>'','VariableProfile'=>''];}
 function IPS_GetObject($id){return ['ObjectIcon'=>'window'];}
 function IPS_InstanceExists($id){return !in_array($id,$GLOBALS['missingInstances']??[],true)&&in_array($id,[20,30,40],true);}
@@ -115,3 +116,8 @@ $GLOBALS['noAudioInstance']=true;$m=setup(false);$fields=array_column(audioForm(
 $m=setup(false);$fields=array_column(audioForm($m)['items'],null,'name');check($fields['AnnouncementAvailabilityHint']['visible']===false&&$fields['Announce']['enabled']===true,'available announcement feature is editable without extra hint');
 $GLOBALS['noVisus']=true;$m=setup(false);$f=json_decode($m->GetConfigurationForm(),true);$push=end($f['elements'][0]['form']);$fields=array_column($push['items'],null,'name');check($fields['PushAvailabilityHint']['visible']===true&&$fields['PushEnabled']['enabled']===false,'missing visualization disables only push inputs');$GLOBALS['noVisus']=false;
 $m=setup(false);$f=json_decode($m->GetConfigurationForm(),true);check(!str_contains(json_encode($f),'Optionale Funktionen'),'general availability block removed');
+
+$GLOBALS['instanceName']='Visu-Messages';$m=setup(false);check($GLOBALS['instanceName']==='Mitteilungszentrale','legacy default instance name migrated');
+$GLOBALS['instanceName']='Meine Meldungen';$m=setup(false);check($GLOBALS['instanceName']==='Meine Meldungen','custom instance name preserved');
+$r=json_decode($m->p['Rules'],true);$r[0]['PushTitle']='Visu-Messages';$m->p['Rules']=json_encode($r);$m->ApplyChanges();$r=json_decode($m->p['Rules'],true);check($r[0]['PushTitle']==='Mitteilungszentrale','legacy push title migrated');
+$r[0]['PushTitle']='Eigener Titel';$m->p['Rules']=json_encode($r);$m->ApplyChanges();$r=json_decode($m->p['Rules'],true);check($r[0]['PushTitle']==='Eigener Titel','custom push title preserved');
